@@ -1,0 +1,12 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body, #__next {
+  min-height: 100vh;
+}
+
+.wallet-adapter-button.wallet-adapter-button-trigger {
+  @apply bg-slate-700
+}
+
