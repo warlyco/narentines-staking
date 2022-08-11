@@ -4,7 +4,12 @@ import LoadingNftCard from "features/nft-card/loading-nft-card";
 import { useCallback, useEffect, useState } from "react";
 import NftList from "../nft-list";
 
-const NftListWrapper = ({ nfts }: { nfts: Nft[] | null }) => {
+type Props = {
+  nfts: Nft[] | null;
+  isLoadingNfts: boolean;
+};
+
+const NftListWrapper = ({ nfts, isLoadingNfts }: Props) => {
   if (!nfts)
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-8 mt-4">
@@ -16,7 +21,7 @@ const NftListWrapper = ({ nfts }: { nfts: Nft[] | null }) => {
 
   return (
     <div>
-      <NftList nfts={nfts} />
+      <NftList nfts={nfts} isLoadingNfts={isLoadingNfts} />
     </div>
   );
 };
