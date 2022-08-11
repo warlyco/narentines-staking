@@ -1,3 +1,3 @@
-# s ◎ l a r e
+# staking
 
 nfts bruh

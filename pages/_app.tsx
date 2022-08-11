@@ -9,7 +9,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>s ◎ l a r e</title>
+        <title>Narentines Staking</title>
       </Head>
       <ContextProvider>
         <MainLayout>

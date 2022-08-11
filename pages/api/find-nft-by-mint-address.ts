@@ -1,6 +1,6 @@
 import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
 import { Connection, Keypair, PublicKey } from "@solana/web3.js";
-import { RPC_ENDPOINT_DEVNET } from "constants/constants";
+import { RPC_ENDPOINT } from "constants/constants";
 import { Request, Response } from "express-serve-static-core";
 import fs from "fs";
 
@@ -14,7 +14,7 @@ export default async function handler(req: Request, res: Response) {
 
   if (!KEYPAIR_FILE) return;
 
-  const rpcConnection = new Connection(RPC_ENDPOINT_DEVNET);
+  const rpcConnection = new Connection(RPC_ENDPOINT);
   const keypairFile = fs.readFileSync(KEYPAIR_FILE);
   const keypair = Keypair.fromSecretKey(
     Buffer.from(JSON.parse(keypairFile.toString()))
