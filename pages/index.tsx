@@ -40,6 +40,15 @@ const Home: NextPage = () => {
     fetchNfts();
   }, [fetchNfts, publicKey]);
 
+  if (!publicKey) {
+    return (
+      <div className="flex flex-col items-center justify-center w-full h-screen -mt-24">
+        <h1 className="mb-8 text-6xl uppercase">the pond</h1>
+        <WalletMultiButton />
+      </div>
+    );
+  }
+
   return (
     <div className="h-full w-full flex">
       <div className="max-w-5xl p-4 text-2xl w-full">
