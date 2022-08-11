@@ -42,8 +42,7 @@ export const Navbar = ({ toggleSidebar }: Props) => {
           </a>
           <a
             className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-bold shadow-xl"
-            href="//raffle.narentines.com"
-            target="_blank"
+            href="//bazaar.narentines.com/raffle"
             rel="noopener noreferrer"
           >
             Raffle

@@ -79,7 +79,6 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
               <div>
                 <div className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 uppercase rounded-lg font-bold py-[4px] inline-block -mt-1">
                   <a
-                    target="_blank"
                     rel="noopener noreferrer"
                     href="//bazaar.narentines.com/raffle"
                     onClick={handleCloseSidebar}

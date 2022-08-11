@@ -53,7 +53,7 @@ const Home: NextPage = () => {
     <div className="h-full w-full flex">
       <div className="max-w-5xl p-4 text-2xl w-full">
         <ClientOnly>
-          <div className="flex pb-2 justify-between">
+          <div className="flex pb-4 justify-between">
             <div className="space-x-2">
               <button
                 className={classNames({
