@@ -18,9 +18,9 @@ export default function MainLayout({ children }: Props) {
           backgroundImage: `url(${bg.src})`,
           minHeight: "100vh",
         }}
-        className="-mt-16"
+        className="-mt-24"
       >
-        <div className="pt-16 max-w-5xl mx-auto">{children}</div>
+        <div className="pt-24 max-w-5xl mx-auto">{children}</div>
       </div>
     </>
   );

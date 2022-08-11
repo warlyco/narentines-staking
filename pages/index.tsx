@@ -14,15 +14,15 @@ const Home: NextPage = () => {
 
   return (
     <div className="h-full w-full flex">
-      <div className="max-w-5xl p-4 pt-8 text-2xl w-full">
+      <div className="max-w-5xl p-4 text-2xl w-full">
         <ClientOnly>
-          <div className="flex pb-6 space-x-2">
+          <div className="flex pb-2 space-x-2">
             <button
               className={classNames({
-                "p-2 px-4 rounded  text-white uppercase text-xl pt-2.5": true,
+                "p-2 px-4 rounded  text-white uppercase text-xl pt-2.5 border-2 border-green-800":
+                  true,
                 "bg-green-800": activeWallet === WalletType.USER,
-                "bg-transparent border-2 border-green-800":
-                  activeWallet !== WalletType.USER,
+                "bg-transparent": activeWallet !== WalletType.USER,
               })}
               onClick={() => setActiveWallet(WalletType.USER)}
             >
@@ -30,10 +30,10 @@ const Home: NextPage = () => {
             </button>
             <button
               className={classNames({
-                "p-2 px-4 rounded text-white uppercase text-xl pt-2.5": true,
+                "p-2 px-4 rounded text-white uppercase text-xl pt-2.5 border-2 border-green-800":
+                  true,
                 "bg-green-800": activeWallet === WalletType.STAKING,
-                "bg-transparent border-2 border-green-800":
-                  activeWallet !== WalletType.STAKING,
+                "bg-transparent": activeWallet !== WalletType.STAKING,
               })}
               onClick={() => setActiveWallet(WalletType.STAKING)}
             >
