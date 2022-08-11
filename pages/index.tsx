@@ -17,11 +17,13 @@ enum WalletType {
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletType>(WalletType.USER);
   const [selectedNfts, setSelectedNfts] = useState<Nft[] | null>(null);
+  const [isLoadingNfts, setIsLoadingNfts] = useState<boolean>(false);
 
   const { publicKey } = useWallet();
   const { connection } = useConnection();
 
   const fetchNfts = useCallback(async () => {
+    setIsLoadingNfts(true);
     const ownerToSearch =
       activeWallet === WalletType.USER
         ? publicKey?.toString()
@@ -32,6 +34,8 @@ const Home: NextPage = () => {
       setSelectedNfts(nfts);
     } catch (error) {
       console.error(error);
+    } finally {
+      setIsLoadingNfts(false);
     }
   }, [activeWallet, connection, publicKey]);
 
@@ -72,7 +76,7 @@ const Home: NextPage = () => {
             </div>
             <WalletMultiButton />
           </div>
-          <NftListWrapper nfts={selectedNfts} />
+          <NftListWrapper nfts={selectedNfts} isLoadingNfts={isLoadingNfts} />
         </ClientOnly>
       </div>
     </div>
