@@ -1,5 +1,7 @@
-export const CREATOR_MINT_ID: string =
-  process.env.NEXT_PUBLIC_CREATOR_MINT_ID || "";
+export const CREATOR_ADDRESS: string =
+  process.env.NEXT_PUBLIC_NARENTINE_CREATOR_ADDRESS || "";
+export const COLLECTION_SYMBOL: string =
+  process.env.NEXT_PUBLIC_NARENTINE_COLLECTION_SYMBOL || "";
 
 export const RPC_ENDPOINT: string = process.env.NEXT_PUBLIC_RPC_ENDPOINT || "";
 

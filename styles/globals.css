@@ -4,9 +4,25 @@
 
 body, #__next {
   min-height: 100vh;
+  font-family: 'Eczar', serif;
 }
 
 .wallet-adapter-button.wallet-adapter-button-trigger {
-  @apply bg-slate-700
+  @apply bg-green-800 hover:bg-green-900 text-amber-400 px-3 rounded font-medium h-auto uppercase !important;
+}
+.wallet-adapter-button.wallet-adapter-button-trigger > i > img {
+  @apply h-4 w-4;
 }
 
+.deep-shadow {
+  box-shadow: 11px 20px 19px 0px rgba(0,0,0,0.53);
+  -webkit-box-shadow: 11px 20px 19px 0px rgba(0,0,0,0.53);
+  -moz-box-shadow: 11px 20px 19px 0px rgba(0,0,0,0.53);
+}
+
+.swal2-popup {
+  @apply bg-amber-400 rounded-xl !important;
+}
+.swal2-confirm {
+  @apply bg-green-800 text-amber-400 !important;
+}

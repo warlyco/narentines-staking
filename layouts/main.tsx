@@ -1,6 +1,8 @@
 import { NAV_HEIGHT_IN_REMS } from "constants/constants";
 import Navbar from "features/navbar/navbar";
 import classNames from "classnames";
+import bg from "public/images/bg-pattern.png";
+import { minHeight } from "@mui/system";
 
 type Props = {
   children: any;
@@ -12,8 +14,9 @@ export default function MainLayout({ children }: Props) {
       <Navbar />
       <div
         style={{
-          height: `calc(100vh - 4rem)`,
           overflowX: "hidden",
+          backgroundImage: `url(${bg.src})`,
+          minHeight: "100vh",
         }}
         className="-mt-16"
       >
