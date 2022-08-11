@@ -5,9 +5,8 @@ import { useCallback, useEffect, useState } from "react";
 import NftList from "../nft-list";
 
 const UserNftList = () => {
-  const [publicKey, setPublicKey] = useState<string | null>(null);
   const [userNfts, setUserNfts] = useState<Nft[] | null>(null);
-  const wallet = useWallet();
+  const { publicKey } = useWallet();
   const { connection } = useConnection();
 
   const fetchUserNfts = useCallback(async () => {
@@ -30,10 +29,9 @@ const UserNftList = () => {
   }, [connection, publicKey, userNfts]);
 
   useEffect(() => {
-    if (!wallet?.publicKey) return;
-    setPublicKey(wallet.publicKey?.toString());
+    if (!publicKey) return;
     fetchUserNfts();
-  }, [fetchUserNfts, wallet, wallet.publicKey]);
+  }, [fetchUserNfts, publicKey]);
 
   if (!publicKey) return <div>Connect wallet</div>;
 

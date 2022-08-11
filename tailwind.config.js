@@ -20,5 +20,5 @@ module.exports = {
     },
   },
   plugins: [],
-  safelist: ["h-24", "-mt-24", "pt-24", "max-w-5xl", "mx-auto"],
+  safelist: ["pt-24", "max-w-5xl", "mx-auto"],
 };
