@@ -11,9 +11,6 @@ const LoadingNftCard = () => (
         <div className="w-full flex h-12 bg-slate-500 animate-pulse rounded"></div>
       </div>
       <div className="w-full flex h-8 bg-slate-500 animate-pulse rounded"></div>
-      <div className="w-full flex h-8 bg-slate-500 animate-pulse rounded"></div>
-      <div className="w-full flex h-8 bg-slate-500 animate-pulse rounded"></div>
-      <div className="w-full flex h-8 bg-slate-500 animate-pulse rounded"></div>
     </div>
   </div>
 );
