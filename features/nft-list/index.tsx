@@ -4,7 +4,7 @@ import NftListItem from "./nft-list-item.tsx";
 
 const NftList = ({ nfts }: { nfts: Nft[] }) => {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mt-4 mb-8">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-8">
       {!!nfts &&
         nfts
           .filter(
