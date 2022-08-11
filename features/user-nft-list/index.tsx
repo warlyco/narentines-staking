@@ -1,9 +1,8 @@
 import { Metaplex, Nft } from "@metaplex-foundation/js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
-import { COLLECTION_SYMBOL, CREATOR_ADDRESS } from "constants/constants";
-import NftListItem from "features/nft-list/nft-list-item.tsx";
+import LoadingNftCard from "features/nft-card/loading-nft-card";
 import { useCallback, useEffect, useState } from "react";
-import NftList from "../nft-list/nft-list";
+import NftList from "../nft-list";
 
 const UserNftList = () => {
   const [publicKey, setPublicKey] = useState<string | null>(null);
@@ -13,17 +12,21 @@ const UserNftList = () => {
 
   const fetchUserNfts = useCallback(async () => {
     if (userNfts) return;
-    const metaplex = Metaplex.make(connection);
-    const nfts = await metaplex
-      .nfts()
-      .findAllByOwner(publicKey?.toString())
-      .run();
-    // const nfts = await metaplex
-    //   .nfts()
-    //   .findAllByCreator("7tiX1neqKjQ3mxYHjLZMw3ydC9cAUpeyAsRq2va5vizG")
-    //   .run();
 
-    setUserNfts(nfts);
+    try {
+      const metaplex = Metaplex.make(connection);
+      const nfts = await metaplex
+        .nfts()
+        .findAllByOwner(publicKey?.toString())
+        .run();
+      // const nfts = await metaplex
+      //   .nfts()
+      //   .findAllByCreator("7tiX1neqKjQ3mxYHjLZMw3ydC9cAUpeyAsRq2va5vizG")
+      //   .run();
+      setUserNfts(nfts);
+    } catch (error) {
+      console.error(error);
+    }
   }, [connection, publicKey, userNfts]);
 
   useEffect(() => {
@@ -32,18 +35,20 @@ const UserNftList = () => {
     fetchUserNfts();
   }, [fetchUserNfts, wallet, wallet.publicKey]);
 
+  if (!publicKey) return <div>Connect wallet</div>;
+
+  if (!userNfts)
+    return (
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 -mt-2 mb-8">
+        <LoadingNftCard />
+        <LoadingNftCard />
+        <LoadingNftCard />
+      </div>
+    );
+
   return (
     <div>
-      <div>
-        <NftList />
-      </div>
-      {!!userNfts &&
-        userNfts
-          .filter(
-            ({ creators }) =>
-              creators?.[0]?.address?.toString() === CREATOR_ADDRESS
-          )
-          .map((nft) => <NftListItem nft={nft} key={String(nft.address)} />)}
+      <NftList nfts={userNfts} />
     </div>
   );
 };

@@ -9,7 +9,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>
       <Head>
-        <title>Narentines Staking</title>
+        <title>The Pond</title>
       </Head>
       <ContextProvider>
         <MainLayout>

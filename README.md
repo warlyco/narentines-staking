@@ -1,3 +1,3 @@
-# staking
+# the pond
 
-nfts bruh
+staking bruh

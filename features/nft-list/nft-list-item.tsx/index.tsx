@@ -1,7 +1,8 @@
 import { Nft } from "@metaplex-foundation/js";
+import NftCard from "features/nft-card";
 
 const NftListItem = ({ nft }: { nft: Nft }) => {
-  return <div key={String(nft.address)}>{JSON.stringify(nft)}</div>;
+  return <NftCard nft={nft} />;
 };
 
 export default NftListItem;
