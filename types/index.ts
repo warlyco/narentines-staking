@@ -4,3 +4,8 @@ export type NftWithMeta = {
   nft: Nft;
   meta: JsonMetadata;
 };
+
+export enum WalletTypes {
+  STAKING = "STAKING",
+  USER = "USER",
+}

@@ -8,15 +8,15 @@ import NftListWrapper from "features/user-nft-list";
 import UserNftList from "features/user-nft-list";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
-
-enum WalletType {
-  STAKING = "STAKING",
-  USER = "USER",
-}
+import { WalletTypes } from "types";
 
 const Home: NextPage = () => {
-  const [activeWallet, setActiveWallet] = useState<WalletType>(WalletType.USER);
-  const [selectedNfts, setSelectedNfts] = useState<Nft[] | null>(null);
+  const [activeWallet, setActiveWallet] = useState<WalletTypes>(
+    WalletTypes.USER
+  );
+  const [selectedWalletNfts, setSelectedWalletNfts] = useState<Nft[] | null>(
+    null
+  );
   const [isLoadingNfts, setIsLoadingNfts] = useState<boolean>(false);
 
   const { publicKey } = useWallet();
@@ -25,13 +25,13 @@ const Home: NextPage = () => {
   const fetchNfts = useCallback(async () => {
     setIsLoadingNfts(true);
     const ownerToSearch =
-      activeWallet === WalletType.USER
+      activeWallet === WalletTypes.USER
         ? publicKey?.toString()
         : STAKING_WALLET_ADDRESS;
     try {
       const metaplex = Metaplex.make(connection);
       const nfts = await metaplex.nfts().findAllByOwner(ownerToSearch).run();
-      setSelectedNfts(nfts);
+      setSelectedWalletNfts(nfts);
     } catch (error) {
       console.error(error);
     } finally {
@@ -63,10 +63,10 @@ const Home: NextPage = () => {
                 className={classNames({
                   "p-2 px-4 rounded font-bold uppercase text-xl pt-2.5 border-2 border-green-800 tracking-wider":
                     true,
-                  "bg-green-800 text-white": activeWallet === WalletType.USER,
-                  "bg-transparent": activeWallet !== WalletType.USER,
+                  "bg-green-800 text-white": activeWallet === WalletTypes.USER,
+                  "bg-transparent": activeWallet !== WalletTypes.USER,
                 })}
-                onClick={() => setActiveWallet(WalletType.USER)}
+                onClick={() => setActiveWallet(WalletTypes.USER)}
               >
                 Wallet
               </button>
@@ -75,17 +75,21 @@ const Home: NextPage = () => {
                   "p-2 px-4 rounded font-bold uppercase text-xl pt-2.5 border-2 border-green-800 tracking-wider":
                     true,
                   "bg-green-800 text-white":
-                    activeWallet === WalletType.STAKING,
-                  "bg-transparent": activeWallet !== WalletType.STAKING,
+                    activeWallet === WalletTypes.STAKING,
+                  "bg-transparent": activeWallet !== WalletTypes.STAKING,
                 })}
-                onClick={() => setActiveWallet(WalletType.STAKING)}
+                onClick={() => setActiveWallet(WalletTypes.STAKING)}
               >
                 Staked
               </button>
             </div>
             <WalletMultiButton />
           </div>
-          <NftListWrapper nfts={selectedNfts} isLoadingNfts={isLoadingNfts} />
+          <NftListWrapper
+            activeWallet={activeWallet}
+            nfts={selectedWalletNfts}
+            isLoadingNfts={isLoadingNfts}
+          />
         </ClientOnly>
       </div>
     </div>

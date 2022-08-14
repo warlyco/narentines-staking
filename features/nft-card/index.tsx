@@ -2,11 +2,17 @@ import { Nft } from "@metaplex-foundation/js";
 import axios from "axios";
 import classNames from "classnames";
 import bg from "public/images/single-item-bg.png";
-import { useEffect, useState } from "react";
+import { ReactNode, useEffect, useState } from "react";
 import AttributesList from "features/nft-card/attributes-list";
 import LoadingNftCard from "features/nft-card/loading-nft-card";
 
-const NftCard = ({ nft }: { nft: Nft }) => {
+const NftCard = ({
+  nft,
+  children,
+}: {
+  nft: Nft;
+  children: ReactNode | null;
+}) => {
   const [metaData, setMetaData] = useState<any>();
 
   const fetchMetaData = async (uri: string) => {
@@ -43,6 +49,7 @@ const NftCard = ({ nft }: { nft: Nft }) => {
       />
       <div className="text-2xl font-bold py-1">{name}</div>
       {/* <AttributesList metaData={metaData} /> */}
+      {children}
     </div>
   );
 };
