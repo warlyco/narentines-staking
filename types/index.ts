@@ -9,3 +9,7 @@ export enum WalletTypes {
   STAKING = "STAKING",
   USER = "USER",
 }
+
+export enum ModalTypes {
+  SENDING_TRNASACTION = "SENDING_TRNASACTION",
+}
