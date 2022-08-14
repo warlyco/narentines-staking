@@ -44,12 +44,12 @@ const NftCard = ({
         src={image}
         alt="raffle item"
         className={classNames({
-          "w-full object-cover lg:max-h-[280px] mb-2 bg-gray-400": true,
+          "w-full object-cover lg:max-h-[280px] mb-1 bg-gray-400": true,
         })}
       />
-      <div className="text-2xl font-bold py-1">{name}</div>
+      <div className="text-2xl font-bold mb-2">{name}</div>
       {/* <AttributesList metaData={metaData} /> */}
-      {children}
+      <div className="py-1">{children}</div>
     </div>
   );
 };
