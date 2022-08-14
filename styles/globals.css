@@ -8,7 +8,7 @@ body, #__next {
 }
 
 .wallet-adapter-button.wallet-adapter-button-trigger {
-  @apply bg-green-800 hover:bg-green-900 text-amber-400 px-3 rounded font-medium h-auto uppercase !important;
+  @apply bg-green-800 hover:bg-green-900 text-amber-400 px-3 rounded font-medium h-auto uppercase border-2 border-green-800 py-0.5 !important;
 }
 .wallet-adapter-button.wallet-adapter-button-trigger > i > img {
   @apply h-4 w-4;
@@ -24,5 +24,5 @@ body, #__next {
   @apply bg-amber-400 rounded-xl !important;
 }
 .swal2-confirm {
-  @apply bg-green-800 text-amber-400 !important;
+  @apply bg-green-800 text-amber-400 border-2 border-green-800 !important;
 }
