@@ -1,5 +1,6 @@
 import { Nft } from "@metaplex-foundation/js";
 import NftCard from "features/nft-card";
+import StakeUnstakeButtons from "features/nft-card/stake-unstake-buttons";
 import { useCallback } from "react";
 import { WalletTypes } from "types";
 
@@ -10,25 +11,15 @@ type Props = {
 
 const NftListItem = ({ nft, activeWallet }: Props) => {
   const stakeNft = useCallback(async () => {}, []);
+  const unstakeNft = useCallback(async () => {}, []);
 
   return (
     <NftCard nft={nft}>
-      {activeWallet === WalletTypes.USER && (
-        <button
-          className="border-2 border-green-800 uppercase bg-green-800 p-2 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800"
-          onClick={stakeNft}
-        >
-          Stake
-        </button>
-      )}
-      {activeWallet === WalletTypes.STAKING && (
-        <button
-          className="border-2 border-green-800 uppercase bg-green-800 p-2 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800"
-          onClick={stakeNft}
-        >
-          Unstake
-        </button>
-      )}
+      <StakeUnstakeButtons
+        activeWallet={activeWallet}
+        stakeNft={stakeNft}
+        unstakeNft={unstakeNft}
+      />
     </NftCard>
   );
 };

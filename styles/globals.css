@@ -8,10 +8,10 @@ body, #__next {
 }
 
 .wallet-adapter-button.wallet-adapter-button-trigger {
-  @apply bg-green-800 hover:bg-green-900 text-amber-400 px-3 rounded font-medium h-auto uppercase border-2 border-green-800 py-0.5 !important;
+  @apply bg-green-800 hover:bg-green-900 text-amber-400 px-3 rounded font-medium h-auto uppercase border-2 border-green-800 py-2.5 text-xl !important;
 }
 .wallet-adapter-button.wallet-adapter-button-trigger > i > img {
-  @apply h-4 w-4;
+  @apply h-3 w-3;
 }
 
 .deep-shadow {

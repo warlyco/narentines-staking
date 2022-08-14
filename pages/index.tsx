@@ -84,7 +84,7 @@ const Home: NextPage = () => {
               </button>
             </div>
             <div className="space-x-2">
-              <button className="border-2 border-green-800 bg-green-800 p-2 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800">
+              <button className="border-2 border-green-800 bg-green-800 text-xl p-2 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 uppercase">
                 Stake All
               </button>
               <WalletMultiButton />
