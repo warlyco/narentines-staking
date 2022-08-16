@@ -1,11 +1,36 @@
+import {
+  Metadata,
+  Metaplex,
+  Nft,
+  toToken,
+  toTokenAccount,
+} from "@metaplex-foundation/js";
+import {
+  Account,
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createAssociatedTokenAccount,
+  createAssociatedTokenAccountInstruction,
+  getAccount,
+  getAssociatedTokenAddress,
+  getOrCreateAssociatedTokenAccount,
+  TokenAccountNotFoundError,
+  TokenInvalidAccountOwnerError,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  BlockhashWithExpiryBlockHeight,
+  PublicKey,
+  Transaction,
+} from "@solana/web3.js";
+import { STAKING_WALLET_ADDRESS } from "constants/constants";
 import Image from "next/image";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { WalletTypes } from "types";
 
 type Props = {
-  stakeNft: () => void;
-  unstakeNft: () => void;
   activeWallet: WalletTypes;
+  nft: Metadata;
 };
 
 enum Professions {
@@ -14,17 +39,154 @@ enum Professions {
   FARMING = "FARMING",
 }
 
-const StakeUnstakeButtons = ({ activeWallet, stakeNft, unstakeNft }: Props) => {
+const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
   const [profession, setProfession] = useState<Professions | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const {
+    publicKey: fromPublicKey,
+    signTransaction,
+    sendTransaction,
+  } = useWallet();
+  const { connection } = useConnection();
 
   const selectProfession = (profession: string) => {
     setProfession(profession as Professions);
   };
 
+  const handleSendTransaction = useCallback(
+    async ({
+      transaction,
+      latestBlockHash,
+    }: {
+      transaction: Transaction;
+      latestBlockHash: BlockhashWithExpiryBlockHeight;
+    }) => {
+      if (!signTransaction || !fromPublicKey) return;
+      try {
+        const signed = await signTransaction(transaction);
+        let signature;
+        try {
+          signature = await connection.sendRawTransaction(signed.serialize());
+        } catch (error) {
+          console.log("sendRawTransaction error", error);
+          // handleRollbackPurchase(id, "Your purchase could not be completed.");
+          return;
+        }
+
+        if (!signature) {
+          throw new Error("Unkown error");
+        }
+
+        try {
+          await connection.confirmTransaction({
+            signature,
+            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+            blockhash: latestBlockHash.blockhash,
+          });
+        } catch (error) {
+          console.error(error);
+          return;
+        }
+      } catch (error) {
+        console.error("error", error);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [connection, fromPublicKey, signTransaction]
+  );
+
+  const stakeNft = useCallback(async () => {
+    if (!fromPublicKey || !signTransaction) {
+      console.log("error", "Wallet not connected!");
+      return;
+    }
+    if (!STAKING_WALLET_ADDRESS) {
+      throw new Error("STAKING_WALLET_ADDRESS is not defined");
+    }
+    const tokenMintAddress = nft.mintAddress;
+    const amount = 1;
+
+    const toAddress = STAKING_WALLET_ADDRESS;
+    const toPublicKey = new PublicKey(toAddress);
+    let fromTokenAccount;
+    try {
+      fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        // @ts-ignore
+        fromPublicKey,
+        tokenMintAddress,
+        fromPublicKey,
+        false,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+    const associatedToken = await getAssociatedTokenAddress(
+      tokenMintAddress,
+      toPublicKey,
+      true,
+      TOKEN_PROGRAM_ID,
+      ASSOCIATED_TOKEN_PROGRAM_ID
+    );
+
+    let account: Account;
+    try {
+      account = await getAccount(
+        connection,
+        associatedToken,
+        "confirmed",
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+    } catch (error: unknown) {
+      if (
+        error instanceof TokenAccountNotFoundError ||
+        error instanceof TokenInvalidAccountOwnerError
+      ) {
+        try {
+          const transaction = new Transaction().add(
+            createAssociatedTokenAccountInstruction(
+              fromPublicKey,
+              associatedToken,
+              toPublicKey,
+              tokenMintAddress,
+              TOKEN_PROGRAM_ID,
+              ASSOCIATED_TOKEN_PROGRAM_ID
+            )
+          );
+          debugger;
+          await sendTransaction(transaction, connection);
+        } catch (error: unknown) {}
+        account = await getAccount(
+          connection,
+          associatedToken,
+          "confirmed",
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        debugger;
+      } else {
+        throw error;
+      }
+    }
+    console.log("account", account);
+    debugger;
+  }, [
+    connection,
+    fromPublicKey,
+    nft.mintAddress,
+    sendTransaction,
+    signTransaction,
+  ]);
+
+  const unstakeNft = useCallback(async () => {}, []);
+
   return (
     <div className="flex w-full space-x-3">
       <button
-        className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800"
+        className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
         onClick={activeWallet === WalletTypes.USER ? stakeNft : unstakeNft}
       >
         {activeWallet === WalletTypes.USER ? "Stake" : "Unstake"}

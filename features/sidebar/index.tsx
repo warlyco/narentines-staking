@@ -2,7 +2,6 @@ import classNames from "classnames";
 import ClientOnly from "features/client-only";
 import Overlay from "features/overlay";
 import Image from "next/image";
-import Link from "next/link";
 import bg from "public/images/bg-black.png";
 import ScrollLock from "react-scrolllock";
 
@@ -50,7 +49,7 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
             <div className="flex flex-col space-y-8 flex-grow">
               <div>
                 <a
-                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-bold"
+                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium"
                   href="//narentines.com"
                   target="_blank"
                   onClick={handleCloseSidebar}
@@ -61,7 +60,7 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
               </div>
               <div>
                 <a
-                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-bold"
+                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium"
                   href="//explore.narentines.com"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -71,7 +70,7 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
                 </a>
               </div>
               <div>
-                <div className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 uppercase rounded-lg font-bold py-[4px] inline-block -mt-1">
+                <div className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 uppercase rounded-lg font-medium py-[4px] inline-block -mt-1">
                   <a
                     rel="noopener noreferrer"
                     href="//bazaar.narentines.com/raffle"
@@ -84,7 +83,7 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
               </div>
               {/* <div>
                 <a
-                  className="bg-red-700 hover:bg-red-900 text-amber-200 text-2xl px-3 uppercase rounded-lg font-bold"
+                  className="bg-red-700 hover:bg-red-900 text-amber-200 text-2xl px-3 uppercase rounded-lg font-medium"
                   href=""
                 >
                   Litepaper

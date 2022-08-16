@@ -1,4 +1,4 @@
-import { Nft } from "@metaplex-foundation/js";
+import { Metadata, Nft } from "@metaplex-foundation/js";
 import { CREATOR_ADDRESS } from "constants/constants";
 import LoadingNftCard from "features/nft-card/loading-nft-card";
 import { WalletTypes } from "types";
@@ -6,7 +6,7 @@ import NftListItem from "./nft-list-item.tsx";
 
 type Props = {
   isLoadingNfts: boolean;
-  nfts: Nft[] | null;
+  nfts: Metadata[] | null;
   activeWallet: WalletTypes;
 };
 const NftList = ({ nfts, isLoadingNfts, activeWallet }: Props) => {

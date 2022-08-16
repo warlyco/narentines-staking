@@ -16,7 +16,7 @@ const Overlay = ({ onClick, isVisible, modalType }: Props) => {
       default:
         return (
           <div className="text-center">
-            <div className="font-bold text-2xl">Submitting Transaction</div>
+            <div className="font-medium text-2xl">Submitting Transaction</div>
             <div className="py-4 italic">Please do not close this window</div>
             <div>
               <Spinner />

@@ -1,4 +1,4 @@
-import { Metaplex, Nft } from "@metaplex-foundation/js";
+import { Metadata, Metaplex, Nft } from "@metaplex-foundation/js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import LoadingNftCard from "features/nft-card/loading-nft-card";
 import { useCallback, useEffect, useState } from "react";
@@ -6,7 +6,7 @@ import { WalletTypes } from "types";
 import NftList from "../nft-list";
 
 type Props = {
-  nfts: Nft[] | null;
+  nfts: Metadata[] | null;
   isLoadingNfts: boolean;
   activeWallet: WalletTypes;
 };

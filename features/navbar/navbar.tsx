@@ -25,7 +25,7 @@ export const Navbar = ({ toggleSidebar }: Props) => {
 
         <div className="hidden lg:flex items-center space-x-2">
           <a
-            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-bold shadow-xl"
+            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-medium shadow-xl"
             href="//www.narentines.com"
             target="_blank"
             rel="noopener noreferrer"
@@ -33,7 +33,7 @@ export const Navbar = ({ toggleSidebar }: Props) => {
             Home
           </a>
           <a
-            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-bold shadow-xl"
+            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-medium shadow-xl"
             href="//explore.narentines.com"
             target="_blank"
             rel="noopener noreferrer"
@@ -41,7 +41,7 @@ export const Navbar = ({ toggleSidebar }: Props) => {
             Explore the Valley
           </a>
           <a
-            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-bold shadow-xl"
+            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-medium shadow-xl"
             href="//bazaar.narentines.com/raffle"
             rel="noopener noreferrer"
           >
