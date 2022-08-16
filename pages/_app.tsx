@@ -4,6 +4,7 @@ import Head from "next/head";
 import MainLayout from "layouts/main";
 import "styles/globals.css";
 import "@solana/wallet-adapter-react-ui/styles.css";
+import { LoadingProvider } from "hooks/is-loading";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
@@ -12,9 +13,11 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <title>The Pond</title>
       </Head>
       <ContextProvider>
-        <MainLayout>
-          <Component {...pageProps} />
-        </MainLayout>
+        <LoadingProvider>
+          <MainLayout>
+            <Component {...pageProps} />
+          </MainLayout>
+        </LoadingProvider>
       </ContextProvider>
     </>
   );
