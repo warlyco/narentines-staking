@@ -10,6 +10,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createAssociatedTokenAccount,
   createAssociatedTokenAccountInstruction,
+  createTransferInstruction,
   getAccount,
   getAssociatedTokenAddress,
   getOrCreateAssociatedTokenAccount,
@@ -118,6 +119,8 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
         tokenMintAddress,
         fromPublicKey,
         false,
+        "confirmed",
+        {},
         TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
@@ -125,59 +128,101 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
       console.error(error);
       return;
     }
-    const associatedToken = await getAssociatedTokenAddress(
-      tokenMintAddress,
-      toPublicKey,
-      true,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
 
-    let account: Account;
+    let toTokenAccount;
+    const transaction = new Transaction();
+
     try {
-      account = await getAccount(
+      // get token account if it exists
+      toTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
-        associatedToken,
+        // @ts-ignore
+        fromPublicKey,
+        tokenMintAddress,
+        toPublicKey,
+        false,
         "confirmed",
+        {},
+        TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID
       );
-    } catch (error: unknown) {
-      if (
-        error instanceof TokenAccountNotFoundError ||
-        error instanceof TokenInvalidAccountOwnerError
-      ) {
-        try {
-          const transaction = new Transaction().add(
-            createAssociatedTokenAccountInstruction(
-              fromPublicKey,
-              associatedToken,
-              toPublicKey,
-              tokenMintAddress,
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            )
-          );
-          debugger;
-          await sendTransaction(transaction, connection);
-        } catch (error: unknown) {}
+    } catch (error) {
+      // if it doesn't exist (check error), create it
+      console.error(error);
+      debugger;
+
+      // get address of ATA
+      const associatedToken = await getAssociatedTokenAddress(
+        tokenMintAddress,
+        toPublicKey,
+        true,
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+
+      let account: Account;
+      try {
+        // use the address to get the account
         account = await getAccount(
           connection,
           associatedToken,
           "confirmed",
           ASSOCIATED_TOKEN_PROGRAM_ID
         );
-        debugger;
-      } else {
-        throw error;
+      } catch (error: unknown) {
+        if (
+          error instanceof TokenAccountNotFoundError ||
+          error instanceof TokenInvalidAccountOwnerError
+        ) {
+          try {
+            // if the account doesn't exist, create it
+            transaction.add(
+              createAssociatedTokenAccountInstruction(
+                fromPublicKey,
+                associatedToken,
+                toPublicKey,
+                tokenMintAddress,
+                TOKEN_PROGRAM_ID,
+                ASSOCIATED_TOKEN_PROGRAM_ID
+              )
+            );
+            debugger;
+          } catch (error: unknown) {
+            throw error;
+          }
+        } else {
+          throw error;
+        }
       }
     }
-    console.log("account", account);
+
+    if (!toTokenAccount) {
+      throw new Error("toTokenAccount is undefined");
+    }
+
+    transaction.add(
+      createTransferInstruction(
+        fromTokenAccount.address,
+        toTokenAccount.address,
+        fromPublicKey,
+        amount,
+        [],
+        TOKEN_PROGRAM_ID
+      )
+    );
+
+    const latestBlockHash = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = latestBlockHash.blockhash;
+
+    transaction.feePayer = fromPublicKey;
     debugger;
+
+    handleSendTransaction({ transaction, latestBlockHash });
   }, [
     connection,
     fromPublicKey,
+    handleSendTransaction,
     nft.mintAddress,
-    sendTransaction,
     signTransaction,
   ]);
 
