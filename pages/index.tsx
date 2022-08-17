@@ -13,6 +13,7 @@ import { useLazyQuery } from "@apollo/client";
 import { FETCH_NFTS_BY_HOLDER_AND_OWNER } from "graphql/queries/fetch-nfts-by-holder-and-owner";
 import { jsonToBase64 } from "@toruslabs/openlogin-utils";
 import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
+import axios from "axios";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
@@ -47,6 +48,38 @@ const Home: NextPage = () => {
     },
   });
 
+  const updateOwnerHolderInDb = useCallback(async () => {
+    console.log("updateOwnerHolderInDb", nftsFromDb);
+    if (!nftsFromDb?.nfts?.length) return;
+    let ownerMintAddresses = [];
+    let holderMintAddresses = [];
+    for (const nft of nftsFromDb.nfts) {
+      if (nft.ownerWalletAddress !== publicKey?.toString()) {
+        ownerMintAddresses.push(nft.mintAddress);
+      }
+      if (nft.holderWalletAddress !== publicKey?.toString()) {
+        holderMintAddresses.push(nft.mintAddress);
+      }
+    }
+    if (ownerMintAddresses.length) {
+      axios.post("/api/update-nfts-owner", {
+        mintAddresses: ownerMintAddresses,
+        walletAddress: publicKey?.toString(),
+      });
+    }
+    if (holderMintAddresses.length) {
+      axios.post("/api/update-nfts-holder", {
+        mintAddresses: holderMintAddresses,
+        walletAddress: publicKey?.toString(),
+      });
+    }
+  }, [nftsFromDb, publicKey]);
+
+  useEffect(() => {
+    if (!nftsFromDb?.nfts?.length) return;
+    updateOwnerHolderInDb();
+  }, [nftsFromDb, updateOwnerHolderInDb]);
+
   const fetchNftsFromMetaplex = useCallback(async () => {
     try {
       setIsLoadingNfts(true);
@@ -66,7 +99,6 @@ const Home: NextPage = () => {
         const mintAddress = nft.mintAddress.toString();
         console.log("nft", nft);
         userNftsInCollectionMintAddresses.push(mintAddress);
-        // search db
       }
       setAddressesToFetch(userNftsInCollectionMintAddresses);
       await fetchNftsFromDb();
@@ -79,7 +111,8 @@ const Home: NextPage = () => {
 
   const fetchNfts = useCallback(async () => {
     if (activeWallet === WalletTypes.STAKING) {
-      fetchStakedNfts();
+      await fetchStakedNfts();
+
       return;
     } else {
       console.log("fetchNftsFromMetaplex");
@@ -91,7 +124,7 @@ const Home: NextPage = () => {
     if (!publicKey) return;
     fetchNfts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicKey]);
+  }, [publicKey, activeWallet]);
 
   if (!publicKey) {
     return (
