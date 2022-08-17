@@ -28,27 +28,11 @@ const NftListWrapper = ({
       </div>
     );
 
-  if (activeWallet === WalletTypes.STAKING) {
-    return (
-      <div>
-        <NftList
-          fetchNfts={fetchNfts}
-          nfts={nfts}
-          isLoadingNfts={isLoadingNfts}
-          activeWallet={activeWallet}
-        />
-      </div>
-    );
-  }
-
   return (
     <div>
       <NftList
         fetchNfts={fetchNfts}
-        nfts={nfts.filter(
-          ({ creators }) =>
-            creators?.[0]?.address?.toString() === CREATOR_ADDRESS
-        )}
+        nfts={nfts}
         isLoadingNfts={isLoadingNfts}
         activeWallet={activeWallet}
       />

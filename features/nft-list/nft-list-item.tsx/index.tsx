@@ -13,7 +13,6 @@ type Props = {
 const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
   return (
     <div>
-      {JSON.stringify(nft)}
       <NftCard nft={nft}>
         <StakeUnstakeButtons
           nft={nft}

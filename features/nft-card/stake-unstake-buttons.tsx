@@ -221,7 +221,6 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
               // handleRollbackPurchase(id, "Your purchase could not be completed.");
               return;
             }
-            debugger;
           } catch (error: unknown) {
             setIsLoading(false);
             throw error;
@@ -302,7 +301,6 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       fetchNfts();
     } catch (error) {
       console.error(error);
-      debugger;
     } finally {
       setIsLoading(false);
     }

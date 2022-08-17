@@ -7,8 +7,9 @@ import { Metaplex } from "@metaplex-foundation/js";
 import { RPC_ENDPOINT } from "constants/constants";
 import { Connection, PublicKey } from "@solana/web3.js";
 import axios from "axios";
+import { UPDATE_NFT_OWNER } from "graphql/mutations/update-nft-owner";
 
-const updateNftHolder: NextApiHandler = async (req, response) => {
+const updateNftOwner: NextApiHandler = async (req, response) => {
   const { mintAddress, walletAddress } = req.body;
 
   if (!mintAddress || !walletAddress)
@@ -33,27 +34,25 @@ const updateNftHolder: NextApiHandler = async (req, response) => {
   }
 
   try {
-    const connection = new Connection(RPC_ENDPOINT);
-    const metaplex = Metaplex.make(connection);
-    const nftFromMetaplex = await metaplex
-      .nfts()
-      .findByMint(new PublicKey(mintAddress))
-      .run();
+    // const connection = new Connection(RPC_ENDPOINT);
+    // const metaplex = Metaplex.make(connection);
+    // const nftFromMetaplex = await metaplex
+    //   .nfts()
+    //   .findByMint(new PublicKey(mintAddress))
+    //   .run();
 
-    console.log("nftFromMetaplex", nftFromMetaplex);
-
-    const variables = {
-      mintAddress,
-      walletAddress,
-      timestamp: new Date().toISOString(),
-    };
+    // console.log("nftFromMetaplex", nftFromMetaplex);
 
     // if holder is confrimed and is not staking wallet, set as owner
 
     const { update_nfts_by_pk } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: UPDATE_NFT_HOLDER,
-      variables,
+      document: UPDATE_NFT_OWNER,
+      variables: {
+        mintAddress,
+        walletAddress,
+        timestamp: new Date().toISOString(),
+      },
       requestHeaders: {
         "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
       },
@@ -66,4 +65,4 @@ const updateNftHolder: NextApiHandler = async (req, response) => {
   }
 };
 
-export default updateNftHolder;
+export default updateNftOwner;

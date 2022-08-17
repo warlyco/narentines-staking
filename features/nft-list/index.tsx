@@ -13,7 +13,6 @@ type Props = {
 const NftList = ({ nfts, isLoadingNfts, activeWallet, fetchNfts }: Props) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-8">
-      {JSON.stringify(nfts)}
       {isLoadingNfts && <LoadingNftCard />}
       {!isLoadingNfts &&
         !!nfts &&
@@ -21,7 +20,7 @@ const NftList = ({ nfts, isLoadingNfts, activeWallet, fetchNfts }: Props) => {
           <NftListItem
             fetchNfts={fetchNfts}
             nft={nft}
-            key={String(nft.address)}
+            key={String(nft.mintAddress)}
             activeWallet={activeWallet}
           />
         ))}

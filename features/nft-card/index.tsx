@@ -10,26 +10,17 @@ const NftCard = ({
   nft,
   children,
 }: {
-  nft: Metadata;
+  nft: any;
   children: ReactNode | null;
 }) => {
-  const [metaData, setMetaData] = useState<any>();
-
-  const fetchMetaData = async (uri: string) => {
-    const { data } = await axios.get(uri);
-    setMetaData(data);
-  };
-
-  useEffect(() => {
-    const { uri } = nft;
-    if (!uri) return;
-
-    fetchMetaData(uri);
-  }, [nft]);
-
-  if (!metaData) return <LoadingNftCard />;
-
-  const { name, image } = metaData;
+  const {
+    holderWalletAddress,
+    image,
+    mintAddress,
+    name,
+    ownerWalletAddress,
+    timestamp,
+  } = nft;
 
   return (
     <div

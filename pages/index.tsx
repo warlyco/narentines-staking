@@ -2,7 +2,7 @@ import { Metadata, Metaplex, Nft } from "@metaplex-foundation/js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import classNames from "classnames";
-import { STAKING_WALLET_ADDRESS } from "constants/constants";
+import { CREATOR_ADDRESS, STAKING_WALLET_ADDRESS } from "constants/constants";
 import ClientOnly from "features/client-only";
 import NftListWrapper from "features/user-nft-list";
 import UserNftList from "features/user-nft-list";
@@ -12,14 +12,17 @@ import { WalletTypes } from "types";
 import { useLazyQuery } from "@apollo/client";
 import { FETCH_NFTS_BY_HOLDER_AND_OWNER } from "graphql/queries/fetch-nfts-by-holder-and-owner";
 import { jsonToBase64 } from "@toruslabs/openlogin-utils";
+import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
     WalletTypes.USER
   );
-  const [selectedWalletNfts, setSelectedWalletNfts] = useState<
-    Metadata[] | null
-  >(null);
+  const [nftsFromMetaplex, setNftsFromMetaplex] = useState<Metadata[] | null>(
+    null
+  );
+  const [addressesToFetch, setAddressesToFetch] = useState<string[]>([]);
+  const [nftsToDisplay, setNftsToDisplay] = useState<Metadata[] | null>(null);
   const [isLoadingNfts, setIsLoadingNfts] = useState<boolean>(false);
 
   const { publicKey } = useWallet();
@@ -35,31 +38,60 @@ const Home: NextPage = () => {
     },
   });
 
-  const fetchNfts = useCallback(async () => {
-    if (activeWallet === WalletTypes.STAKING) {
-      fetchStakedNfts();
-      return;
-    }
+  const [
+    fetchNftsFromDb,
+    { loading: isLoadingDbNfts, error: fetchFromDbError, data: nftsFromDb },
+  ] = useLazyQuery(FETCH_NFTS_BY_MINT_ADDRESSES, {
+    variables: {
+      mintAddresses: addressesToFetch,
+    },
+  });
 
-    setIsLoadingNfts(true);
+  const fetchNftsFromMetaplex = useCallback(async () => {
     try {
+      setIsLoadingNfts(true);
       const metaplex = Metaplex.make(connection);
-      const nfts = await metaplex
+      const nftsFromMetaplex = await metaplex
         .nfts()
         .findAllByOwner(publicKey?.toString())
         .run();
-      setSelectedWalletNfts(nfts);
+      setNftsFromMetaplex(nftsFromMetaplex);
+      const collection = nftsFromMetaplex.filter(
+        ({ creators }: { creators: any }) =>
+          creators?.[0]?.address?.toString() === CREATOR_ADDRESS
+      );
+
+      let userNftsInCollectionMintAddresses = [];
+      for (let nft of collection) {
+        const mintAddress = nft.mintAddress.toString();
+        console.log("nft", nft);
+        userNftsInCollectionMintAddresses.push(mintAddress);
+        // search db
+      }
+      setAddressesToFetch(userNftsInCollectionMintAddresses);
+      await fetchNftsFromDb();
     } catch (error) {
       console.error(error);
     } finally {
       setIsLoadingNfts(false);
     }
-  }, [activeWallet, connection, fetchStakedNfts, publicKey]);
+  }, [connection, fetchNftsFromDb, publicKey]);
+
+  const fetchNfts = useCallback(async () => {
+    if (activeWallet === WalletTypes.STAKING) {
+      fetchStakedNfts();
+      return;
+    } else {
+      console.log("fetchNftsFromMetaplex");
+      fetchNftsFromMetaplex();
+    }
+  }, [activeWallet, fetchNftsFromMetaplex, fetchStakedNfts]);
 
   useEffect(() => {
     if (!publicKey) return;
     fetchNfts();
-  }, [fetchNfts, publicKey]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [publicKey]);
 
   if (!publicKey) {
     return (
@@ -102,7 +134,7 @@ const Home: NextPage = () => {
             </div>
             <div className="flex items-center space-x-2">
               {activeWallet === WalletTypes.USER &&
-                !!selectedWalletNfts?.length && (
+                !!nftsFromMetaplex?.length && (
                   <button className="border-2 border-green-800 bg-green-800 text-2xl p-2 rounded text-amber-400 hover:bg-amber-200 hover:text-green-800 uppercase">
                     Stake All
                   </button>
@@ -115,7 +147,7 @@ const Home: NextPage = () => {
             activeWallet={activeWallet}
             nfts={
               activeWallet === WalletTypes.USER
-                ? selectedWalletNfts
+                ? nftsFromDb?.nfts
                 : stakedNfts?.nfts
             }
             isLoadingNfts={isLoadingNfts || isLoadingStakedNfts}
