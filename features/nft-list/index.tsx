@@ -13,22 +13,18 @@ type Props = {
 const NftList = ({ nfts, isLoadingNfts, activeWallet, fetchNfts }: Props) => {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-8">
+      {JSON.stringify(nfts)}
       {isLoadingNfts && <LoadingNftCard />}
       {!isLoadingNfts &&
         !!nfts &&
-        nfts
-          .filter(
-            ({ creators }) =>
-              creators?.[0]?.address?.toString() === CREATOR_ADDRESS
-          )
-          .map((nft) => (
-            <NftListItem
-              fetchNfts={fetchNfts}
-              nft={nft}
-              key={String(nft.address)}
-              activeWallet={activeWallet}
-            />
-          ))}
+        nfts.map((nft) => (
+          <NftListItem
+            fetchNfts={fetchNfts}
+            nft={nft}
+            key={String(nft.address)}
+            activeWallet={activeWallet}
+          />
+        ))}
     </div>
   );
 };

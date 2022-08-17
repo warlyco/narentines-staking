@@ -9,6 +9,9 @@ import UserNftList from "features/user-nft-list";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { WalletTypes } from "types";
+import { useLazyQuery } from "@apollo/client";
+import { FETCH_NFTS_BY_HOLDER_AND_OWNER } from "graphql/queries/fetch-nfts-by-holder-and-owner";
+import { jsonToBase64 } from "@toruslabs/openlogin-utils";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
@@ -22,22 +25,36 @@ const Home: NextPage = () => {
   const { publicKey } = useWallet();
   const { connection } = useConnection();
 
+  const [
+    fetchStakedNfts,
+    { loading: isLoadingStakedNfts, error, data: stakedNfts },
+  ] = useLazyQuery(FETCH_NFTS_BY_HOLDER_AND_OWNER, {
+    variables: {
+      ownerWalletAddress: publicKey?.toString(),
+      holderWalletAddress: STAKING_WALLET_ADDRESS,
+    },
+  });
+
   const fetchNfts = useCallback(async () => {
+    if (activeWallet === WalletTypes.STAKING) {
+      fetchStakedNfts();
+      return;
+    }
+
     setIsLoadingNfts(true);
-    const ownerToSearch =
-      activeWallet === WalletTypes.USER
-        ? publicKey?.toString()
-        : STAKING_WALLET_ADDRESS;
     try {
       const metaplex = Metaplex.make(connection);
-      const nfts = await metaplex.nfts().findAllByOwner(ownerToSearch).run();
+      const nfts = await metaplex
+        .nfts()
+        .findAllByOwner(publicKey?.toString())
+        .run();
       setSelectedWalletNfts(nfts);
     } catch (error) {
       console.error(error);
     } finally {
       setIsLoadingNfts(false);
     }
-  }, [activeWallet, connection, publicKey]);
+  }, [activeWallet, connection, fetchStakedNfts, publicKey]);
 
   useEffect(() => {
     if (!publicKey) return;
@@ -96,8 +113,12 @@ const Home: NextPage = () => {
           <NftListWrapper
             fetchNfts={fetchNfts}
             activeWallet={activeWallet}
-            nfts={selectedWalletNfts}
-            isLoadingNfts={isLoadingNfts}
+            nfts={
+              activeWallet === WalletTypes.USER
+                ? selectedWalletNfts
+                : stakedNfts?.nfts
+            }
+            isLoadingNfts={isLoadingNfts || isLoadingStakedNfts}
           />
         </ClientOnly>
       </div>

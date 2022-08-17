@@ -2,7 +2,6 @@ import { Metadata, Nft } from "@metaplex-foundation/js";
 
 import NftCard from "features/nft-card";
 import StakeUnstakeButtons from "features/nft-card/stake-unstake-buttons";
-import { useCallback } from "react";
 import { WalletTypes } from "types";
 
 type Props = {
@@ -13,13 +12,16 @@ type Props = {
 
 const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
   return (
-    <NftCard nft={nft}>
-      <StakeUnstakeButtons
-        nft={nft}
-        activeWallet={activeWallet}
-        fetchNfts={fetchNfts}
-      />
-    </NftCard>
+    <div>
+      {JSON.stringify(nft)}
+      <NftCard nft={nft}>
+        <StakeUnstakeButtons
+          nft={nft}
+          activeWallet={activeWallet}
+          fetchNfts={fetchNfts}
+        />
+      </NftCard>
+    </div>
   );
 };
 

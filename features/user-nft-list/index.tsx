@@ -1,5 +1,6 @@
 import { Metadata, Metaplex, Nft } from "@metaplex-foundation/js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { CREATOR_ADDRESS } from "constants/constants";
 import LoadingNftCard from "features/nft-card/loading-nft-card";
 import { useCallback, useEffect, useState } from "react";
 import { WalletTypes } from "types";
@@ -27,11 +28,27 @@ const NftListWrapper = ({
       </div>
     );
 
+  if (activeWallet === WalletTypes.STAKING) {
+    return (
+      <div>
+        <NftList
+          fetchNfts={fetchNfts}
+          nfts={nfts}
+          isLoadingNfts={isLoadingNfts}
+          activeWallet={activeWallet}
+        />
+      </div>
+    );
+  }
+
   return (
     <div>
       <NftList
         fetchNfts={fetchNfts}
-        nfts={nfts}
+        nfts={nfts.filter(
+          ({ creators }) =>
+            creators?.[0]?.address?.toString() === CREATOR_ADDRESS
+        )}
         isLoadingNfts={isLoadingNfts}
         activeWallet={activeWallet}
       />

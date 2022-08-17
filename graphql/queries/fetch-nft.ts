@@ -1,13 +1,14 @@
 import { gql } from "graphql-request";
 
 export const FETCH_NFT = gql`
-  query MyQuery($mintAddress: String = "") {
+  query FetchNft($mintAddress: String = "") {
     nfts(where: { mintAddress: { _eq: $mintAddress } }) {
       name
-      imgUrl
+      image
       holderWalletAddress
       mintAddress
       timestamp
+      ownerWalletAddress
     }
   }
 `;

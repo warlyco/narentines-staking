@@ -34,45 +34,44 @@ const updateNft: NextApiHandler = async (req, response) => {
       response.status(200).json({ nft: nfts?.[0] });
       return;
     } else {
+      const connection = new Connection(RPC_ENDPOINT);
+      const metaplex = Metaplex.make(connection);
+      const nftFromMetaplex = await metaplex
+        .nfts()
+        .findByMint(new PublicKey(mintAddress))
+        .run();
+      nft = nftFromMetaplex;
+
+      const { name, image } = nft.json;
       const res = await request({
         url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
         document: ADD_NFT,
         variables: {
           mintAddress,
+          holderWalletAddress: walletAddress,
+          ownerWalletAddress: walletAddress,
+          name,
+          image: image,
         },
         requestHeaders: {
           "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
         },
       });
     }
-
-    const connection = new Connection(RPC_ENDPOINT);
-    const metaplex = Metaplex.make(connection);
-    const nftFromMetaplex = await metaplex
-      .nfts()
-      .findByMint(new PublicKey(mintAddress))
-      .run();
-    nft = nftFromMetaplex;
-    console.log("nftFromMetaplex", nftFromMetaplex);
   } catch (error) {
     console.log(error);
     response.status(500).json({ error });
   }
 
   try {
-    const { name, image } = nft.json;
-    const { address } = nft;
     const timestamp = new Date().toISOString();
-    console.log("```image", image);
 
     const { update_nfts_by_pk } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
       document: UPDATE_NFT_HOLDER,
       variables: {
-        name,
-        mintAddress: address.toString(),
         holderWalletAddress: walletAddress,
-        timestamp,
+        timestamp: new Date().toISOString(),
       },
       requestHeaders: {
         "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,

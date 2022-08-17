@@ -2,15 +2,17 @@ import { gql } from "graphql-request";
 
 export const ADD_NFT = gql`
   mutation AddNft(
+    $ownerWalletAddress: String
     $holderWalletAddress: String
-    $imgUrl: String
+    $image: String
     $mintAddress: String
     $name: String
   ) {
     insert_nfts_one(
       object: {
+        ownerWalletAddress: $ownerWalletAddress
         holderWalletAddress: $holderWalletAddress
-        imgUrl: $imgUrl
+        image: $image
         mintAddress: $mintAddress
         name: $name
       }
@@ -20,8 +22,9 @@ export const ADD_NFT = gql`
         where: {}
       }
     ) {
+      ownerWalletAddress
       holderWalletAddress
-      imgUrl
+      image
       mintAddress
       name
       timestamp
