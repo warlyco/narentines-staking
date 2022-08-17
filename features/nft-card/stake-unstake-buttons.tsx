@@ -24,9 +24,9 @@ import {
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
+import axios from "axios";
 import { STAKING_WALLET_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
-import Image from "next/image";
 import { useCallback, useState } from "react";
 import { WalletTypes } from "types";
 
@@ -46,11 +46,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
   const { setIsLoading, setLoadingMessage } = useIsLoading();
   const [profession, setProfession] = useState<Professions | null>(null);
 
-  const {
-    publicKey: fromPublicKey,
-    signTransaction,
-    sendTransaction,
-  } = useWallet();
+  const { publicKey, signTransaction, sendTransaction } = useWallet();
   const { connection } = useConnection();
 
   const selectProfession = (profession: string) => {
@@ -65,7 +61,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       transaction: Transaction;
       latestBlockHash: BlockhashWithExpiryBlockHeight;
     }) => {
-      if (!signTransaction || !fromPublicKey) return;
+      if (!signTransaction || !publicKey) return;
       try {
         const signed = await signTransaction(transaction);
         let signature;
@@ -97,11 +93,11 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
         setIsLoading(false);
       }
     },
-    [connection, fromPublicKey, setIsLoading, signTransaction]
+    [connection, publicKey, setIsLoading, signTransaction]
   );
 
   const stakeNft = async () => {
-    if (!fromPublicKey || !signTransaction) {
+    if (!publicKey || !signTransaction) {
       console.log("error", "Wallet not connected!");
       return;
     }
@@ -112,16 +108,14 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
     const tokenMintAddress = nft.mintAddress;
     const amount = 1;
 
-    const toAddress = STAKING_WALLET_ADDRESS;
-    const toPublicKey = new PublicKey(toAddress);
     let fromTokenAccount;
     try {
       fromTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         // @ts-ignore
-        fromPublicKey,
+        publicKey,
         tokenMintAddress,
-        fromPublicKey,
+        publicKey,
         false,
         "confirmed",
         {},
@@ -142,9 +136,9 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       toTokenAccount = await getOrCreateAssociatedTokenAccount(
         connection,
         // @ts-ignore
-        fromPublicKey,
+        publicKey,
         tokenMintAddress,
-        toPublicKey,
+        new PublicKey(STAKING_WALLET_ADDRESS),
         false,
         "confirmed",
         {},
@@ -157,7 +151,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       // get address of ATA
       const associatedToken = await getAssociatedTokenAddress(
         tokenMintAddress,
-        toPublicKey,
+        new PublicKey(STAKING_WALLET_ADDRESS),
         true,
         TOKEN_PROGRAM_ID,
         ASSOCIATED_TOKEN_PROGRAM_ID
@@ -181,9 +175,9 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
             // if the account doesn't exist, create it
             transaction.add(
               createAssociatedTokenAccountInstruction(
-                fromPublicKey,
+                publicKey,
                 associatedToken,
-                toPublicKey,
+                new PublicKey(STAKING_WALLET_ADDRESS),
                 tokenMintAddress,
                 TOKEN_PROGRAM_ID,
                 ASSOCIATED_TOKEN_PROGRAM_ID
@@ -191,7 +185,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
             );
             const latestBlockHash = await connection.getLatestBlockhash();
             transaction.recentBlockhash = latestBlockHash.blockhash;
-            transaction.feePayer = fromPublicKey;
+            transaction.feePayer = publicKey;
             let signed;
             try {
               signed = await signTransaction(transaction);
@@ -212,9 +206,9 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
               toTokenAccount = await getOrCreateAssociatedTokenAccount(
                 connection,
                 // @ts-ignore
-                fromPublicKey,
+                publicKey,
                 tokenMintAddress,
-                toPublicKey,
+                new PublicKey(STAKING_WALLET_ADDRESS),
                 false,
                 "confirmed",
                 {},
@@ -247,7 +241,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       createTransferInstruction(
         fromTokenAccount.address,
         toTokenAccount.address,
-        fromPublicKey,
+        publicKey,
         amount,
         [],
         TOKEN_PROGRAM_ID
@@ -256,7 +250,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
 
     const latestBlockHash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = latestBlockHash.blockhash;
-    transaction.feePayer = fromPublicKey;
+    transaction.feePayer = publicKey;
     let signed;
     try {
       signed = await signTransaction(transaction);
@@ -279,7 +273,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
         fetchNfts();
       }, 1000);
     } catch (error) {
-      console.log("couldd not confirm", error);
+      console.log("could not confirm", error);
       // handleRollbackPurchase(id, "Your purchase could not be completed.");
       return;
     } finally {
@@ -287,7 +281,32 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
     }
   };
 
-  const unstakeNft = useCallback(async () => {}, []);
+  const unstakeNft = async () => {
+    if (!publicKey || !signTransaction) {
+      console.log("error", "Wallet not connected!");
+      return;
+    }
+    if (!STAKING_WALLET_ADDRESS) {
+      throw new Error("STAKING_WALLET_ADDRESS is not defined");
+    }
+    setIsLoading(true, "Unstaking...");
+    const tokenMintAddress = nft.mintAddress;
+    const amount = 1;
+
+    try {
+      const { data } = await axios.post("/api/unstake", {
+        mintAddress: tokenMintAddress,
+        publicKey: publicKey.toString(),
+      });
+      console.log(data?.confirmation);
+      fetchNfts();
+    } catch (error) {
+      console.error(error);
+      debugger;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex w-full space-x-3">
