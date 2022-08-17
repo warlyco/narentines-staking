@@ -43,7 +43,7 @@ enum Professions {
 }
 
 const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
-  const { setIsLoading } = useIsLoading();
+  const { setIsLoading, setLoadingMessage } = useIsLoading();
   const [profession, setProfession] = useState<Professions | null>(null);
 
   const {
@@ -108,7 +108,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
     if (!STAKING_WALLET_ADDRESS) {
       throw new Error("STAKING_WALLET_ADDRESS is not defined");
     }
-    setIsLoading(true);
+    setIsLoading(true, "Staking...");
     const tokenMintAddress = nft.mintAddress;
     const amount = 1;
 

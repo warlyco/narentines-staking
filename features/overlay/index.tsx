@@ -1,5 +1,6 @@
 import classNames from "classnames";
 import Spinner from "features/UI/spinner";
+import { useIsLoading } from "hooks/is-loading";
 import ScrollLock from "react-scrolllock";
 import { ModalTypes } from "types";
 
@@ -10,21 +11,7 @@ type Props = {
 };
 
 const Overlay = ({ onClick, isVisible, modalType }: Props) => {
-  const getMessage = () => {
-    switch (modalType) {
-      case ModalTypes.SENDING_TRNASACTION:
-      default:
-        return (
-          <div className="text-center">
-            <div className="font-medium text-2xl">Submitting Transaction</div>
-            <div className="py-4 italic">Please do not close this window</div>
-            <div>
-              <Spinner />
-            </div>
-          </div>
-        );
-    }
-  };
+  const { loadingMessage, setLoadingMessage } = useIsLoading();
 
   return (
     <>
@@ -37,9 +24,17 @@ const Overlay = ({ onClick, isVisible, modalType }: Props) => {
             "opacity-0 pointer-events-none": !isVisible,
           })}
         >
-          {!!modalType && (
+          {!!loadingMessage?.length && (
             <div className="bg-amber-200 m-auto fixed top-1/2 left-1/2 centered p-4 rounded">
-              {getMessage()}
+              <div className="text-center">
+                <div className="font-medium text-2xl">{loadingMessage}</div>
+                <div className="py-4 italic">
+                  Please do not close this window
+                </div>
+                <div>
+                  <Spinner />
+                </div>
+              </div>
             </div>
           )}
         </div>
