@@ -8,12 +8,17 @@ import { WalletTypes } from "types";
 type Props = {
   activeWallet: WalletTypes;
   nft: Metadata;
+  fetchNfts: () => Promise<void>;
 };
 
-const NftListItem = ({ nft, activeWallet }: Props) => {
+const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
   return (
     <NftCard nft={nft}>
-      <StakeUnstakeButtons nft={nft} activeWallet={activeWallet} />
+      <StakeUnstakeButtons
+        nft={nft}
+        activeWallet={activeWallet}
+        fetchNfts={fetchNfts}
+      />
     </NftCard>
   );
 };

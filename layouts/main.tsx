@@ -12,7 +12,7 @@ type Props = {
 };
 
 export default function MainLayout({ children }: Props) {
-  const { isLoading, setIsLoading } = useIsLoading();
+  const { isLoading } = useIsLoading();
   const [isOpenSidebar, setIsOpenSidebar] = useState(false);
 
   const toggleSidebar = () => {
@@ -28,10 +28,7 @@ export default function MainLayout({ children }: Props) {
           minHeight: "100vh",
         }}
       >
-        <div className="max-w-5xl mx-auto pt-24">
-          <button onClick={() => setIsLoading(true)}>click me!</button>
-          {children}
-        </div>
+        <div className="max-w-5xl mx-auto pt-24">{children}</div>
       </div>
       <Navbar toggleSidebar={toggleSidebar} />
       <Sidebar isOpenSidebar={isOpenSidebar} toggleSidebar={toggleSidebar} />

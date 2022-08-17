@@ -9,9 +9,15 @@ type Props = {
   nfts: Metadata[] | null;
   isLoadingNfts: boolean;
   activeWallet: WalletTypes;
+  fetchNfts: () => Promise<void>;
 };
 
-const NftListWrapper = ({ nfts, isLoadingNfts, activeWallet }: Props) => {
+const NftListWrapper = ({
+  nfts,
+  isLoadingNfts,
+  activeWallet,
+  fetchNfts,
+}: Props) => {
   if (!nfts)
     return (
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-8 mt-4">
@@ -24,6 +30,7 @@ const NftListWrapper = ({ nfts, isLoadingNfts, activeWallet }: Props) => {
   return (
     <div>
       <NftList
+        fetchNfts={fetchNfts}
         nfts={nfts}
         isLoadingNfts={isLoadingNfts}
         activeWallet={activeWallet}

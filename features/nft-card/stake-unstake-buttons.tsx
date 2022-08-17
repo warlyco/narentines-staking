@@ -25,6 +25,7 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import { STAKING_WALLET_ADDRESS } from "constants/constants";
+import { useIsLoading } from "hooks/is-loading";
 import Image from "next/image";
 import { useCallback, useState } from "react";
 import { WalletTypes } from "types";
@@ -32,6 +33,7 @@ import { WalletTypes } from "types";
 type Props = {
   activeWallet: WalletTypes;
   nft: Metadata;
+  fetchNfts: () => Promise<void>;
 };
 
 enum Professions {
@@ -40,9 +42,10 @@ enum Professions {
   FARMING = "FARMING",
 }
 
-const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
+const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
+  const { setIsLoading } = useIsLoading();
   const [profession, setProfession] = useState<Professions | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+
   const {
     publicKey: fromPublicKey,
     signTransaction,
@@ -94,10 +97,10 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
         setIsLoading(false);
       }
     },
-    [connection, fromPublicKey, signTransaction]
+    [connection, fromPublicKey, setIsLoading, signTransaction]
   );
 
-  const stakeNft = useCallback(async () => {
+  const stakeNft = async () => {
     if (!fromPublicKey || !signTransaction) {
       console.log("error", "Wallet not connected!");
       return;
@@ -105,6 +108,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
     if (!STAKING_WALLET_ADDRESS) {
       throw new Error("STAKING_WALLET_ADDRESS is not defined");
     }
+    setIsLoading(true);
     const tokenMintAddress = nft.mintAddress;
     const amount = 1;
 
@@ -126,6 +130,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
       );
     } catch (error) {
       console.error(error);
+      setIsLoading(false);
       return;
     }
 
@@ -148,8 +153,6 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
       );
     } catch (error) {
       // if it doesn't exist (check error), create it
-      console.error(error);
-      debugger;
 
       // get address of ATA
       const associatedToken = await getAssociatedTokenAddress(
@@ -186,11 +189,51 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
                 ASSOCIATED_TOKEN_PROGRAM_ID
               )
             );
+            const latestBlockHash = await connection.getLatestBlockhash();
+            transaction.recentBlockhash = latestBlockHash.blockhash;
+            transaction.feePayer = fromPublicKey;
+            let signed;
+            try {
+              signed = await signTransaction(transaction);
+            } catch (error) {
+              setIsLoading(false);
+              return;
+            }
+            let signature;
+            try {
+              signature = await connection.sendRawTransaction(
+                signed.serialize()
+              );
+              await connection.confirmTransaction({
+                signature,
+                lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+                blockhash: latestBlockHash.blockhash,
+              });
+              toTokenAccount = await getOrCreateAssociatedTokenAccount(
+                connection,
+                // @ts-ignore
+                fromPublicKey,
+                tokenMintAddress,
+                toPublicKey,
+                false,
+                "confirmed",
+                {},
+                TOKEN_PROGRAM_ID,
+                ASSOCIATED_TOKEN_PROGRAM_ID
+              );
+            } catch (error) {
+              console.log("sendRawTransaction error", error);
+              setIsLoading(false);
+              // handleRollbackPurchase(id, "Your purchase could not be completed.");
+              return;
+            }
             debugger;
           } catch (error: unknown) {
+            setIsLoading(false);
             throw error;
           }
         } else {
+          setIsLoading(false);
           throw error;
         }
       }
@@ -213,18 +256,36 @@ const StakeUnstakeButtons = ({ activeWallet, nft }: Props) => {
 
     const latestBlockHash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = latestBlockHash.blockhash;
-
     transaction.feePayer = fromPublicKey;
-    debugger;
-
-    handleSendTransaction({ transaction, latestBlockHash });
-  }, [
-    connection,
-    fromPublicKey,
-    handleSendTransaction,
-    nft.mintAddress,
-    signTransaction,
-  ]);
+    let signed;
+    try {
+      signed = await signTransaction(transaction);
+    } catch (error) {
+      setIsLoading(false);
+      return;
+    }
+    let signature;
+    try {
+      signature = await connection.sendRawTransaction(signed.serialize());
+      await connection.confirmTransaction(
+        {
+          signature,
+          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+          blockhash: latestBlockHash.blockhash,
+        },
+        "finalized"
+      );
+      setTimeout(() => {
+        fetchNfts();
+      }, 1000);
+    } catch (error) {
+      console.log("couldd not confirm", error);
+      // handleRollbackPurchase(id, "Your purchase could not be completed.");
+      return;
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const unstakeNft = useCallback(async () => {}, []);
 

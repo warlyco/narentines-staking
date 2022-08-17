@@ -94,6 +94,7 @@ const Home: NextPage = () => {
             </div>
           </div>
           <NftListWrapper
+            fetchNfts={fetchNfts}
             activeWallet={activeWallet}
             nfts={selectedWalletNfts}
             isLoadingNfts={isLoadingNfts}
