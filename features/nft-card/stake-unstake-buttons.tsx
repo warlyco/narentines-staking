@@ -114,7 +114,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
         connection,
         // @ts-ignore
         publicKey,
-        tokenMintAddress,
+        new PublicKey(tokenMintAddress),
         publicKey,
         false,
         "confirmed",
@@ -137,7 +137,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
         connection,
         // @ts-ignore
         publicKey,
-        tokenMintAddress,
+        new PublicKey(tokenMintAddress),
         new PublicKey(STAKING_WALLET_ADDRESS),
         false,
         "confirmed",
@@ -150,7 +150,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
 
       // get address of ATA
       const associatedToken = await getAssociatedTokenAddress(
-        tokenMintAddress,
+        new PublicKey(tokenMintAddress),
         new PublicKey(STAKING_WALLET_ADDRESS),
         true,
         TOKEN_PROGRAM_ID,
@@ -178,7 +178,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
                 publicKey,
                 associatedToken,
                 new PublicKey(STAKING_WALLET_ADDRESS),
-                tokenMintAddress,
+                new PublicKey(tokenMintAddress),
                 TOKEN_PROGRAM_ID,
                 ASSOCIATED_TOKEN_PROGRAM_ID
               )
@@ -207,7 +207,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
                 connection,
                 // @ts-ignore
                 publicKey,
-                tokenMintAddress,
+                new PublicKey(tokenMintAddress),
                 new PublicKey(STAKING_WALLET_ADDRESS),
                 false,
                 "confirmed",
@@ -268,6 +268,12 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
         },
         "finalized"
       );
+
+      axios.post("/api/update-nfts-holder", {
+        mintAddresses: [tokenMintAddress],
+        walletAddress: STAKING_WALLET_ADDRESS,
+      });
+
       setTimeout(() => {
         fetchNfts();
       }, 1000);
@@ -293,11 +299,16 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
     const amount = 1;
 
     try {
-      const { data } = await axios.post("/api/unstake", {
+      const { data, status } = await axios.post("/api/unstake", {
         mintAddress: tokenMintAddress,
         publicKey: publicKey.toString(),
       });
-      console.log(data?.confirmation);
+      if (status === 200) {
+        axios.post("/api/update-nfts-holder", {
+          mintAddresses: [tokenMintAddress],
+          walletAddress: publicKey?.toString(),
+        });
+      }
       fetchNfts();
     } catch (error) {
       console.error(error);

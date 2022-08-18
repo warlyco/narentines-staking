@@ -14,6 +14,8 @@ import { FETCH_NFTS_BY_HOLDER_AND_OWNER } from "graphql/queries/fetch-nfts-by-ho
 import { jsonToBase64 } from "@toruslabs/openlogin-utils";
 import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
 import axios from "axios";
+import { useRouter } from "next/router";
+import Link from "next/link";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
@@ -28,6 +30,8 @@ const Home: NextPage = () => {
 
   const { publicKey } = useWallet();
   const { connection } = useConnection();
+  const router = useRouter();
+  const { view } = router.query;
 
   const [
     fetchStakedNfts,
@@ -37,6 +41,7 @@ const Home: NextPage = () => {
       ownerWalletAddress: publicKey?.toString(),
       holderWalletAddress: STAKING_WALLET_ADDRESS,
     },
+    fetchPolicy: "no-cache",
   });
 
   const [
@@ -49,19 +54,22 @@ const Home: NextPage = () => {
   });
 
   const updateOwnerHolderInDb = useCallback(async () => {
-    console.log("updateOwnerHolderInDb", nftsFromDb);
     if (!nftsFromDb?.nfts?.length) return;
     let ownerMintAddresses = [];
     let holderMintAddresses = [];
+    const activeWalletAddress =
+      activeWallet === WalletTypes.USER
+        ? publicKey?.toString()
+        : STAKING_WALLET_ADDRESS;
     for (const nft of nftsFromDb.nfts) {
       if (nft.ownerWalletAddress !== publicKey?.toString()) {
         ownerMintAddresses.push(nft.mintAddress);
       }
-      if (nft.holderWalletAddress !== publicKey?.toString()) {
+      if (nft.holderWalletAddress !== activeWalletAddress) {
         holderMintAddresses.push(nft.mintAddress);
       }
     }
-    if (ownerMintAddresses.length) {
+    if (ownerMintAddresses.length && activeWallet === WalletTypes.USER) {
       axios.post("/api/update-nfts-owner", {
         mintAddresses: ownerMintAddresses,
         walletAddress: publicKey?.toString(),
@@ -73,7 +81,7 @@ const Home: NextPage = () => {
         walletAddress: publicKey?.toString(),
       });
     }
-  }, [nftsFromDb, publicKey]);
+  }, [activeWallet, nftsFromDb?.nfts, publicKey]);
 
   useEffect(() => {
     if (!nftsFromDb?.nfts?.length) return;
@@ -97,7 +105,6 @@ const Home: NextPage = () => {
       let userNftsInCollectionMintAddresses = [];
       for (let nft of collection) {
         const mintAddress = nft.mintAddress.toString();
-        console.log("nft", nft);
         userNftsInCollectionMintAddresses.push(mintAddress);
       }
       setAddressesToFetch(userNftsInCollectionMintAddresses);
@@ -122,9 +129,18 @@ const Home: NextPage = () => {
 
   useEffect(() => {
     if (!publicKey) return;
+
+    switch (view) {
+      case "staked":
+        setActiveWallet(WalletTypes.STAKING);
+        break;
+      case "wallet":
+      default:
+        setActiveWallet(WalletTypes.USER);
+    }
     fetchNfts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [publicKey, activeWallet]);
+  }, [publicKey, activeWallet, router.query]);
 
   if (!publicKey) {
     return (
@@ -141,37 +157,51 @@ const Home: NextPage = () => {
         <ClientOnly>
           <div className="flex pb-4 justify-between items-center">
             <div className="space-x-2">
-              <button
-                className={classNames({
-                  "p-2 px-4 rounded font-medium uppercase text-2xl pt-2.5 border-2 border-green-800 tracking-wider":
-                    true,
-                  "bg-green-800 text-white": activeWallet === WalletTypes.USER,
-                  "bg-transparent": activeWallet !== WalletTypes.USER,
-                })}
-                onClick={() => setActiveWallet(WalletTypes.USER)}
+              <Link
+                href={{
+                  pathname: "/",
+                  query: { view: "wallet" },
+                }}
               >
-                Wallet
-              </button>
-              <button
-                className={classNames({
-                  "p-2 px-4 rounded font-medium uppercase text-2xl pt-2.5 border-2 border-green-800 tracking-wider":
-                    true,
-                  "bg-green-800 text-white":
-                    activeWallet === WalletTypes.STAKING,
-                  "bg-transparent": activeWallet !== WalletTypes.STAKING,
-                })}
-                onClick={() => setActiveWallet(WalletTypes.STAKING)}
+                <a
+                  className={classNames({
+                    "px-4 py-0.5 pt-1 rounded font-medium uppercase text-2xl border-2 border-green-800 tracking-wider":
+                      true,
+                    "bg-green-800 text-white":
+                      activeWallet === WalletTypes.USER,
+                    "bg-transparent": activeWallet !== WalletTypes.USER,
+                  })}
+                >
+                  Wallet
+                </a>
+              </Link>
+
+              <Link
+                href={{
+                  pathname: "/",
+                  query: { view: "staked" },
+                }}
               >
-                Staked
-              </button>
+                <a
+                  className={classNames({
+                    "px-4 py-0.5 pt-1 rounded font-medium uppercase text-2xl border-2 border-green-800 tracking-wider":
+                      true,
+                    "bg-green-800 text-white":
+                      activeWallet === WalletTypes.STAKING,
+                    "bg-transparent": activeWallet !== WalletTypes.STAKING,
+                  })}
+                >
+                  Staked
+                </a>
+              </Link>
             </div>
-            <div className="flex items-center space-x-2">
-              {activeWallet === WalletTypes.USER &&
+            <div className="flex items-center space-x-2 -mt-[1px]">
+              {/* {activeWallet === WalletTypes.USER &&
                 !!nftsFromMetaplex?.length && (
                   <button className="border-2 border-green-800 bg-green-800 text-2xl p-2 rounded text-amber-400 hover:bg-amber-200 hover:text-green-800 uppercase">
                     Stake All
                   </button>
-                )}
+                )} */}
               <WalletMultiButton />
             </div>
           </div>
