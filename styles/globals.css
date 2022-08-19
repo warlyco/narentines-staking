@@ -22,3 +22,10 @@ body, #__next {
 .swal2-confirm {
   @apply bg-green-800 text-amber-400 border-2 border-green-800 !important;
 }
+
+
+.deep-shadow {
+  box-shadow: 11px 20px 19px 0px rgba(0,0,0,0.53);
+  -webkit-box-shadow: 11px 20px 19px 0px rgba(0,0,0,0.53);
+  -moz-box-shadow: 11px 20px 19px 0px rgba(0,0,0,0.53);
+}

@@ -2,7 +2,9 @@ import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import { GOODS_TOKEN_MINT_ADDRESS } from "constants/constants";
+import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
+import toast from "react-hot-toast";
 
 type Props = {
   mintAddress: string;
@@ -15,13 +17,50 @@ const ClaimButton = ({ mintAddress, primaryRewardAmount }: Props) => {
 
   const claimPrimaryReward = async () => {
     setIsLoading(true, `Claiming ${primaryRewardAmount} $GOODS`);
-    await axios.post("/api/init-reward-claim", {
+    const { data, status } = await axios.post("/api/init-reward-claim", {
       mintAddress,
       amount: primaryRewardAmount,
       rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
       walletAddress: publicKey?.toString(),
     });
     setIsLoading(false);
+
+    const { confirmation } = data;
+
+    if (status !== 200) {
+      toast.custom(
+        <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+          <div className="font-bold text-3xl mb-2">
+            There might have been a problem.
+          </div>
+          {confirmation && (
+            <>
+              <div>Chack the transaction on solscan:</div>
+              <a href={`//solscan.io/tx/${confirmation}`}>
+                {confirmation.slice(0, 4)}...{confirmation.slice(-4)}
+              </a>
+            </>
+          )}
+        </div>
+      );
+      return;
+    }
+
+    toast.custom(
+      <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+        <div className="font-bold text-3xl mb-2">
+          Claimed {primaryRewardAmount} $GOODS
+        </div>
+        <div>View tx:</div>
+        <a
+          href={`//solscan.io/tx/${confirmation}`}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {confirmation}
+        </a>
+      </div>
+    );
   };
 
   return (

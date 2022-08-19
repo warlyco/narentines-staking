@@ -16,6 +16,7 @@ import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint
 import axios from "axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
+import showToast from "features/toasts/toast";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
@@ -175,7 +176,6 @@ const Home: NextPage = () => {
                   Wallet
                 </a>
               </Link>
-
               <Link
                 href={{
                   pathname: "/",

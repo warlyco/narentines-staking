@@ -6,6 +6,7 @@ import { createContext, useState } from "react";
 import Sidebar from "features/sidebar";
 import Overlay from "features/overlay";
 import { useIsLoading } from "hooks/is-loading";
+import { Toaster } from "react-hot-toast";
 
 type Props = {
   children: any;
@@ -30,6 +31,7 @@ export default function MainLayout({ children }: Props) {
       >
         <div className="max-w-5xl mx-auto pt-24">{children}</div>
       </div>
+      <Toaster />
       <Navbar toggleSidebar={toggleSidebar} />
       <Sidebar isOpenSidebar={isOpenSidebar} toggleSidebar={toggleSidebar} />
       <Overlay isVisible={isLoading} />
