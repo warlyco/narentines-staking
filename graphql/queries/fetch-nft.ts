@@ -8,6 +8,7 @@ export const FETCH_NFT = gql`
       holderWalletAddress
       mintAddress
       timestamp
+      lastClaimTimestamp
       ownerWalletAddress
     }
   }

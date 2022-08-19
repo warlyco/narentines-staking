@@ -12,6 +12,7 @@ export const FETCH_NFTS_BY_HOLDER_AND_OWNER = gql`
       }
     ) {
       timestamp
+      lastClaimTimestamp
       ownerWalletAddress
       name
       mintAddress

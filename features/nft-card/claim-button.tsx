@@ -9,9 +9,14 @@ import toast from "react-hot-toast";
 type Props = {
   mintAddress: string;
   primaryRewardAmount: number;
+  fetchNfts: () => Promise<void>;
 };
 
-const ClaimButton = ({ mintAddress, primaryRewardAmount }: Props) => {
+const ClaimButton = ({
+  mintAddress,
+  primaryRewardAmount,
+  fetchNfts,
+}: Props) => {
   const { setIsLoading } = useIsLoading();
   const { publicKey } = useWallet();
 
@@ -36,7 +41,10 @@ const ClaimButton = ({ mintAddress, primaryRewardAmount }: Props) => {
           {confirmation && (
             <>
               <div>Chack the transaction on solscan:</div>
-              <a href={`//solscan.io/tx/${confirmation}`}>
+              <a
+                href={`//solscan.io/tx/${confirmation}`}
+                className="underline text-green-800"
+              >
                 {confirmation.slice(0, 4)}...{confirmation.slice(-4)}
               </a>
             </>
@@ -56,11 +64,13 @@ const ClaimButton = ({ mintAddress, primaryRewardAmount }: Props) => {
           href={`//solscan.io/tx/${confirmation}`}
           target="_blank"
           rel="noreferrer"
+          className="underline text-green-800"
         >
-          {confirmation}
+          {confirmation.slice(0, 4)}...{confirmation.slice(-4)}
         </a>
       </div>
     );
+    fetchNfts();
   };
 
   return (

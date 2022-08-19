@@ -28,6 +28,7 @@ import axios from "axios";
 import { STAKING_WALLET_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
 import { useCallback, useState } from "react";
+import toast from "react-hot-toast";
 import { WalletTypes } from "types";
 
 type Props = {
@@ -269,10 +270,20 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
         "finalized"
       );
 
-      axios.post("/api/update-nfts-holder", {
+      await axios.post("/api/update-nfts-holder", {
         mintAddresses: [tokenMintAddress],
         walletAddress: STAKING_WALLET_ADDRESS,
       });
+
+      await axios.post("/api/reset-nft-claim-time", {
+        mintAddress: tokenMintAddress,
+      });
+
+      toast.custom(
+        <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+          <div className="font-bold text-3xl mb-2">Staked!</div>
+        </div>
+      );
 
       setTimeout(() => {
         fetchNfts();
@@ -309,6 +320,12 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
           walletAddress: publicKey?.toString(),
         });
       }
+      toast.custom(
+        <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+          <div className="font-bold text-3xl mb-2">Unstaked!</div>
+        </div>
+      );
+
       fetchNfts();
     } catch (error) {
       console.error(error);

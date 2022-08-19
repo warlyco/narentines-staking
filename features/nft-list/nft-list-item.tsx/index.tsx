@@ -21,9 +21,14 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
   const [primaryRewardAmount, setPrimaryRewardAmount] = useState(0);
 
   const calculatePrimaryReward = useCallback(() => {
-    const { timestamp } = nft;
+    const { timestamp, lastClaimTimestamp } = nft;
     const now = dayjs();
-    const stakingTime = dayjs(timestamp);
+    let stakingTime;
+    if (!lastClaimTimestamp) {
+      stakingTime = dayjs(timestamp);
+    } else {
+      stakingTime = dayjs(lastClaimTimestamp);
+    }
     const timeSinceStakingInMs = now.diff(stakingTime);
     const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
     const rewardAmount = timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY;
@@ -38,14 +43,23 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
   return (
     <div>
       <NftCard nft={nft}>
-        <div className="flex text-sm">
-          <div>Staked:&nbsp;</div>
-          <div>{dayjs(nft?.timestamp).format("MM/DD/YYYY @ h:mm A")}</div>
-        </div>
-        <div className="flex text-sm mb-3">
-          <div>Est. reward amount:&nbsp;</div>
-          <div>{primaryRewardAmount.toFixed(2)} $GOODS</div>
-        </div>
+        {activeWallet === WalletTypes.STAKING && (
+          <>
+            <div className="flex text-sm">
+              <div>Staked:&nbsp;</div>
+              <div>{dayjs(nft?.timestamp).format("MM/DD/YYYY @ h:mm A")}</div>
+            </div>
+            <div className="flex text-sm mb-3">
+              <div>Est. reward amount:&nbsp;</div>
+              <div>
+                {primaryRewardAmount.toFixed(2) === "0.00"
+                  ? 0
+                  : primaryRewardAmount.toFixed(2)}{" "}
+                $GOODS
+              </div>
+            </div>
+          </>
+        )}
         <div className="flex space-x-2">
           <div
             className={classNames({
@@ -65,6 +79,7 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
               <ClaimButton
                 primaryRewardAmount={Number(primaryRewardAmount.toFixed(2))}
                 mintAddress={nft?.mintAddress}
+                fetchNfts={fetchNfts}
               />
             </div>
           )}

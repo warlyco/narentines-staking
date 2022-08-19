@@ -9,6 +9,7 @@ export const FETCH_NFTS_BY_OWNER = gql`
       mintAddress
       image
       holderWalletAddress
+      lastClaimTimestamp
     }
   }
 `;

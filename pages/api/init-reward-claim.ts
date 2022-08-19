@@ -20,6 +20,7 @@ import {
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import { UPDATE_NFT_CLAIM_TIME } from "graphql/mutations/update-nft-claim-time";
 
 const initRewardClaim: NextApiHandler = async (req, response) => {
   const { mintAddress, amount, rewardTokenAddress, walletAddress } = req.body;
@@ -100,6 +101,29 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
       }
     );
     console.log("confirmation", confirmation);
+    if (!confirmation) {
+      response.status(500).json({ error: "Transaction failed" });
+      return;
+    }
+
+    try {
+      const { update_nfts_by_pk } = await request({
+        url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
+        document: UPDATE_NFT_CLAIM_TIME,
+        variables: {
+          mintAddress,
+          lastClaimTimestamp: new Date().toISOString(),
+        },
+        requestHeaders: {
+          "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
+        },
+      });
+      console.log("claim updated", update_nfts_by_pk);
+    } catch (error) {
+      console.error(error);
+      response.status(500).json({ error });
+      return;
+    }
   } catch (error) {
     response.status(500).json({ error });
     return;
