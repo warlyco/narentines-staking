@@ -1,6 +1,7 @@
 import { Metadata } from "@metaplex-foundation/mpl-token-metadata";
 import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
+import classNames from "classnames";
 import { GOODS_TOKEN_MINT_ADDRESS } from "constants/constants";
 import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
@@ -77,7 +78,13 @@ const ClaimButton = ({
 
   return (
     <button
-      className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
+      className={classNames({
+        "flex-grow border-2 uppercase p-2 pt-3 rounded font-medium": true,
+        "border-green-800 bg-green-800 text-amber-200 hover:bg-amber-200 hover:text-green-800 ":
+          primaryRewardAmount !== 0,
+        "border-slate-500 bg-slate-500 text-amber-200 cursor-not-allowed":
+          primaryRewardAmount === 0,
+      })}
       onClick={claimPrimaryReward}
       disabled={primaryRewardAmount === 0}
     >
