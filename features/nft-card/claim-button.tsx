@@ -21,6 +21,8 @@ const ClaimButton = ({
   const { publicKey } = useWallet();
 
   const claimPrimaryReward = async () => {
+    if (primaryRewardAmount === 0) return;
+
     setIsLoading(true, `Claiming ${primaryRewardAmount} $GOODS`);
     const { data, status } = await axios.post("/api/init-reward-claim", {
       mintAddress,
@@ -77,6 +79,7 @@ const ClaimButton = ({
     <button
       className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
       onClick={claimPrimaryReward}
+      disabled={primaryRewardAmount === 0}
     >
       Claim
     </button>

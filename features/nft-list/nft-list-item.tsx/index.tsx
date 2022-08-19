@@ -52,9 +52,9 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
             <div className="flex text-sm mb-3">
               <div>Est. reward amount:&nbsp;</div>
               <div>
-                {primaryRewardAmount.toFixed(2) === "0.00"
+                {Number(primaryRewardAmount.toFixed(2)) === 0
                   ? 0
-                  : primaryRewardAmount.toFixed(2)}{" "}
+                  : Number(primaryRewardAmount.toFixed(2))}{" "}
                 $GOODS
               </div>
             </div>
