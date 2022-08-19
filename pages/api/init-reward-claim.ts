@@ -1,7 +1,11 @@
 import type { NextApiHandler } from "next";
 import request from "graphql-request";
-import { RPC_ENDPOINT, STAKING_WALLET_ADDRESS } from "constants/constants";
-import fs from "fs";
+import { UPDATE_NFTS_HOLDER } from "graphql/mutations/update-nfts-holder";
+import {
+  GOODS_TOKEN_MINT_ADDRESS,
+  RPC_ENDPOINT,
+  STAKING_WALLET_ADDRESS,
+} from "constants/constants";
 import {
   Connection,
   Keypair,
@@ -9,19 +13,24 @@ import {
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
-import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
+import * as bs58 from "bs58";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createTransferInstruction,
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import * as bs58 from "bs58";
 
-const stakeNft: NextApiHandler = async (req, response) => {
-  const { mintAddress, publicKey } = req.body;
+const initRewardClaim: NextApiHandler = async (req, response) => {
+  const { mintAddress, amount, rewardTokenAddress, walletAddress } = req.body;
 
-  if (!mintAddress || !publicKey || !process.env.PRIVATE_KEY)
+  if (
+    !mintAddress ||
+    !amount ||
+    !rewardTokenAddress ||
+    !walletAddress ||
+    !process.env.PRIVATE_KEY
+  )
     throw new Error("Missing required fields");
 
   const connection = new Connection(RPC_ENDPOINT);
@@ -31,9 +40,8 @@ const stakeNft: NextApiHandler = async (req, response) => {
   try {
     fromTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
-      // @ts-ignore
-      new PublicKey(publicKey),
-      new PublicKey(mintAddress),
+      keypair,
+      new PublicKey(rewardTokenAddress),
       new PublicKey(STAKING_WALLET_ADDRESS),
       false,
       "confirmed",
@@ -50,10 +58,9 @@ const stakeNft: NextApiHandler = async (req, response) => {
   try {
     toTokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
-      // @ts-ignore
-      new PublicKey(publicKey),
-      new PublicKey(mintAddress),
-      new PublicKey(publicKey),
+      keypair,
+      new PublicKey(rewardTokenAddress),
+      new PublicKey(walletAddress),
       false,
       "confirmed",
       {},
@@ -71,7 +78,7 @@ const stakeNft: NextApiHandler = async (req, response) => {
       fromTokenAccount.address,
       toTokenAccount.address,
       new PublicKey(STAKING_WALLET_ADDRESS),
-      1,
+      amount * 100,
       [],
       TOKEN_PROGRAM_ID
     )
@@ -97,8 +104,7 @@ const stakeNft: NextApiHandler = async (req, response) => {
     response.status(500).json({ error });
     return;
   }
-
   response.json({ confirmation });
 };
 
-export default stakeNft;
+export default initRewardClaim;

@@ -38,9 +38,11 @@ const NftCard = ({
           "w-full object-cover lg:max-h-[280px] mb-1 bg-gray-400": true,
         })}
       />
-      <div className="text-2xl font-medium mb-2">{name}</div>
-      {/* <AttributesList metaData={metaData} /> */}
-      <div className="py-1">{children}</div>
+      <div>
+        <div className="text-2xl font-medium">{name}</div>
+        {/* <AttributesList metaData={metaData} /> */}
+        {children}
+      </div>
     </div>
   );
 };

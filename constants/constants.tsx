@@ -9,6 +9,8 @@ export const COLLECTION_SYMBOL: string =
 
 export const STAKING_WALLET_ADDRESS: string =
   process.env.NEXT_PUBLIC_STAKING_WALLET_ADDRESS || "";
+export const GOODS_TOKEN_MINT_ADDRESS: string =
+  process.env.NEXT_PUBLIC_GOODS_TOKEN_MINT_ADDRESS || "";
 
 export const RPC_ENDPOINT: string = process.env.NEXT_PUBLIC_RPC_ENDPOINT || "";
 export const KEYPAIR_FILE: string = process.env.KEYPAIR_FILE || "";
@@ -37,3 +39,5 @@ export const UTF_8 = "utf-8";
 export const MEMO_PROGRAM_ID = new PublicKey(
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 );
+
+export const PRIMARY_REWARD_AMOUNT_PER_DAY = 3;

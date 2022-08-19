@@ -318,14 +318,12 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
   };
 
   return (
-    <div className="flex w-full space-x-3">
-      <button
-        className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
-        onClick={activeWallet === WalletTypes.USER ? stakeNft : unstakeNft}
-      >
-        {activeWallet === WalletTypes.USER ? "Stake" : "Unstake"}
-      </button>
-    </div>
+    <button
+      className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
+      onClick={activeWallet === WalletTypes.USER ? stakeNft : unstakeNft}
+    >
+      {activeWallet === WalletTypes.USER ? "Stake" : "Unstake"}
+    </button>
   );
 };
 
