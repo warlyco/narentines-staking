@@ -17,6 +17,7 @@ import axios from "axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
 import showToast from "features/toasts/toast";
+import StakeAllButton from "features/stake-all-button";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
@@ -196,12 +197,8 @@ const Home: NextPage = () => {
               </Link>
             </div>
             <div className="flex items-center space-x-2 -mt-[1px]">
-              {/* {activeWallet === WalletTypes.USER &&
-                !!nftsFromMetaplex?.length && (
-                  <button className="border-2 border-green-800 bg-green-800 text-2xl p-2 rounded text-amber-400 hover:bg-amber-200 hover:text-green-800 uppercase">
-                    Stake All
-                  </button>
-                )} */}
+              {activeWallet === WalletTypes.USER &&
+                !!nftsFromMetaplex?.length && <StakeAllButton />}
               <WalletMultiButton />
             </div>
           </div>
