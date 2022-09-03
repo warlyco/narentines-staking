@@ -30,7 +30,8 @@ import { useIsLoading } from "hooks/is-loading";
 import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { WalletTypes } from "types";
-import stakeNfts from "utils/stake-nfts";
+import stakeNftsCustodial from "utils/stake-nfts-custodial";
+import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
 type Props = {
   activeWallet: WalletTypes;
@@ -103,7 +104,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       console.log("error", "Wallet not connected!");
       return;
     }
-    stakeNfts({
+    stakeNftsCustodial({
       publicKey,
       signTransaction,
       nft,

@@ -26,7 +26,7 @@ type Params = {
   fetchNfts: () => Promise<void>;
 };
 
-const stakeNfts = async ({
+const stakeNftsCustodial = async ({
   publicKey,
   signTransaction,
   nft,
@@ -231,4 +231,4 @@ const stakeNfts = async ({
   }
 };
 
-export default stakeNfts;
+export default stakeNftsCustodial;
