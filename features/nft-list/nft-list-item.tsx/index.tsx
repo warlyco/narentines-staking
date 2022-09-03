@@ -7,9 +7,7 @@ import StakeUnstakeButtons from "features/nft-card/stake-unstake-buttons";
 import { useCallback, useEffect, useState } from "react";
 import { WalletTypes } from "types";
 import dayjs from "dayjs";
-import { PRIMARY_REWARD_AMOUNT_PER_DAY } from "constants/constants";
-
-const MS_PER_DAY = 86400000;
+import { MS_PER_DAY, PRIMARY_REWARD_AMOUNT_PER_DAY } from "constants/constants";
 
 type Props = {
   activeWallet: WalletTypes;

@@ -14,7 +14,8 @@ const AdminPanel = () => {
   const handleSubmit = () => {};
 
   return (
-    <div className="w-full mx-auto pt-24">
+    <div className="w-full mx-auto">
+      <h1 className="text-4xl text-center w-full pb-8">Staked</h1>
       <StakedNftTable />
       {/* <form className="space-y-4">
         <div>

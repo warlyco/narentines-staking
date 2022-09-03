@@ -19,7 +19,9 @@ const Admin: NextPage = () => {
   return (
     <div className="h-full w-full flex max-w-5xl mx-auto p-4 py-6 text-center">
       {isAdmin ? (
-        <AdminPanel />
+        <>
+          <AdminPanel />
+        </>
       ) : (
         <div className="text-2xl pt-24 text-center w-full">
           you need to be an admin to view this page
