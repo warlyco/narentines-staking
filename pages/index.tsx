@@ -64,7 +64,10 @@ const Home: NextPage = () => {
         ? publicKey?.toString()
         : STAKING_WALLET_ADDRESS;
     for (const nft of nftsFromDb.nfts) {
-      if (nft.ownerWalletAddress !== publicKey?.toString()) {
+      if (
+        nft.ownerWalletAddress !== publicKey?.toString() &&
+        publicKey?.toString() !== STAKING_WALLET_ADDRESS
+      ) {
         ownerMintAddresses.push(nft.mintAddress);
       }
       if (nft.holderWalletAddress !== activeWalletAddress) {
