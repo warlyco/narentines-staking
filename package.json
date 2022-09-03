@@ -26,6 +26,7 @@
     "@solana/wallet-adapter-react-ui": "^0.9.8",
     "@solana/wallet-adapter-wallets": "^0.16.2",
     "@solana/web3.js": "^1.56.0",
+    "@tanstack/react-table": "^8.5.13",
     "add": "^2.0.6",
     "bs58": "^5.0.0",
     "buffer-layout": "^1.2.2",
