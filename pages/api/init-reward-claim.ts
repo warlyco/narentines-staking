@@ -1,6 +1,5 @@
 import type { NextApiHandler } from "next";
 import request from "graphql-request";
-import { UPDATE_NFTS_HOLDER } from "graphql/mutations/update-nfts-holder";
 import {
   GOODS_TOKEN_MINT_ADDRESS,
   RPC_ENDPOINT,

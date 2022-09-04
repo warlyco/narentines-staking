@@ -2,8 +2,8 @@ import type { NextApiHandler } from "next";
 import request from "graphql-request";
 import { UPDATE_NFTS_HOLDER } from "graphql/mutations/update-nfts-holder";
 
-const updateNftOwner: NextApiHandler = async (req, response) => {
-  const { mintAddresses, walletAddress } = req.body;
+const updateNftsHolder: NextApiHandler = async (req, response) => {
+  const { mintAddresses, walletAddress, professionId } = req.body;
 
   if (!mintAddresses || !walletAddress)
     throw new Error("Missing required fields");
@@ -16,6 +16,7 @@ const updateNftOwner: NextApiHandler = async (req, response) => {
         mintAddresses,
         walletAddress,
         timestamp: new Date().toISOString(),
+        professionId,
       },
       requestHeaders: {
         "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
@@ -29,4 +30,4 @@ const updateNftOwner: NextApiHandler = async (req, response) => {
   }
 };
 
-export default updateNftOwner;
+export default updateNftsHolder;

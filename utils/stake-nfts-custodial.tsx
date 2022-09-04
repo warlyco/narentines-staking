@@ -24,6 +24,7 @@ type Params = {
   connection: Connection;
   setIsLoading: (isLoading: boolean, message?: string) => void;
   fetchNfts: () => Promise<void>;
+  professionId: string;
 };
 
 const stakeNftsCustodial = async ({
@@ -33,6 +34,7 @@ const stakeNftsCustodial = async ({
   connection,
   setIsLoading,
   fetchNfts,
+  professionId,
 }: Params) => {
   if (!publicKey || !signTransaction) {
     console.log("error", "Wallet not connected!");
@@ -207,6 +209,7 @@ const stakeNftsCustodial = async ({
     await axios.post("/api/update-nfts-holder", {
       mintAddresses: [tokenMintAddress],
       walletAddress: STAKING_WALLET_ADDRESS,
+      professionId,
     });
 
     await axios.post("/api/reset-nft-claim-time", {

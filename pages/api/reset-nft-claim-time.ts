@@ -1,6 +1,5 @@
 import type { NextApiHandler } from "next";
 import request from "graphql-request";
-import { UPDATE_NFTS_HOLDER } from "graphql/mutations/update-nfts-holder";
 import { UPDATE_NFT_CLAIM_TIME } from "graphql/mutations/update-nft-claim-time";
 
 const resetNftClaimTime: NextApiHandler = async (req, response) => {

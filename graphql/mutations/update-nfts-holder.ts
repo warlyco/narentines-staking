@@ -1,14 +1,19 @@
 import { gql } from "graphql-request";
 
 export const UPDATE_NFTS_HOLDER = gql`
-  mutation UpdateNftOwner(
+  mutation UpdateNftsHolder(
     $mintAddresses: [String!]
     $walletAddress: String
-    $timestamp: timestamptz
+    $timestamp: timestamptz = ""
+    $professionId: uuid
   ) {
     update_nfts(
       where: { mintAddress: { _in: $mintAddresses } }
-      _set: { holderWalletAddress: $walletAddress, timestamp: $timestamp }
+      _set: {
+        holderWalletAddress: $walletAddress
+        timestamp: $timestamp
+        professionId: $professionId
+      }
     ) {
       returning {
         holderWalletAddress
@@ -18,6 +23,16 @@ export const UPDATE_NFTS_HOLDER = gql`
         ownerWalletAddress
         timestamp
         uri
+        professionId
+        profession {
+          name
+          dailyRewardRate
+          resource {
+            image
+            mintAddress
+            name
+          }
+        }
       }
     }
   }

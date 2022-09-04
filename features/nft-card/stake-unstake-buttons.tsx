@@ -45,6 +45,10 @@ enum Professions {
   FARMING = "FARMING",
 }
 
+enum ProfessionIds {
+  BANER = "8716a284-5481-4340-b166-4c2bd9da4a78",
+}
+
 const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
   const { setIsLoading, setLoadingMessage } = useIsLoading();
   const [profession, setProfession] = useState<Professions | null>(null);
@@ -55,49 +59,6 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
   const selectProfession = (profession: string) => {
     setProfession(profession as Professions);
   };
-
-  const handleSendTransaction = useCallback(
-    async ({
-      transaction,
-      latestBlockHash,
-    }: {
-      transaction: Transaction;
-      latestBlockHash: BlockhashWithExpiryBlockHeight;
-    }) => {
-      if (!signTransaction || !publicKey) return;
-      try {
-        const signed = await signTransaction(transaction);
-        let signature;
-        try {
-          signature = await connection.sendRawTransaction(signed.serialize());
-        } catch (error) {
-          console.log("sendRawTransaction error", error);
-          // handleRollbackPurchase(id, "Your purchase could not be completed.");
-          return;
-        }
-
-        if (!signature) {
-          throw new Error("Unkown error");
-        }
-
-        try {
-          await connection.confirmTransaction({
-            signature,
-            lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-            blockhash: latestBlockHash.blockhash,
-          });
-        } catch (error) {
-          console.error(error);
-          return;
-        }
-      } catch (error) {
-        console.error("error", error);
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    [connection, publicKey, setIsLoading, signTransaction]
-  );
 
   const stakeNft = async () => {
     if (!publicKey || !signTransaction) {
@@ -111,6 +72,7 @@ const StakeUnstakeButtons = ({ activeWallet, nft, fetchNfts }: Props) => {
       connection,
       setIsLoading,
       fetchNfts,
+      professionId: ProfessionIds.BANER,
     });
   };
 

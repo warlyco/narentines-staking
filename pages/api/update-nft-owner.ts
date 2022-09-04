@@ -1,12 +1,6 @@
 import type { NextApiHandler } from "next";
-import { UPDATE_NFT_HOLDER } from "graphql/mutations/update-nft-holder";
 import request, { GraphQLClient } from "graphql-request";
 import { FETCH_NFT } from "graphql/queries/fetch-nft";
-import { ADD_NFT } from "graphql/mutations/add-nft";
-import { Metaplex } from "@metaplex-foundation/js";
-import { RPC_ENDPOINT } from "constants/constants";
-import { Connection, PublicKey } from "@solana/web3.js";
-import axios from "axios";
 import { UPDATE_NFT_OWNER } from "graphql/mutations/update-nft-owner";
 
 const updateNftOwner: NextApiHandler = async (req, response) => {

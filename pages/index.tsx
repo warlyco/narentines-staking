@@ -81,10 +81,10 @@ const Home: NextPage = () => {
       });
     }
     if (holderMintAddresses.length) {
-      axios.post("/api/update-nfts-holder", {
-        mintAddresses: holderMintAddresses,
-        walletAddress: publicKey?.toString(),
-      });
+      // axios.post("/api/update-nfts-holder", {
+      //   mintAddresses: holderMintAddresses,
+      //   walletAddress: publicKey?.toString(),
+      // });
     }
   }, [activeWallet, nftsFromDb?.nfts, publicKey]);
 
