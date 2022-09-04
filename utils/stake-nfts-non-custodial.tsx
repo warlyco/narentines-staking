@@ -226,7 +226,7 @@ const stakeNftsNonCustodial = async ({
 
     toast.custom(
       <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
-        <div className="font-bold text-3xl mb-2">Staked!</div>
+        <div className="font-bold text-3xl">Staked!</div>
       </div>
     );
 

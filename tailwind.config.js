@@ -3,6 +3,9 @@ module.exports = {
   content: ["./pages/**/*.{js,ts,jsx,tsx}", "./features/**/*.{js,ts,jsx,tsx}"],
   theme: {
     extend: {
+      fontSize: {
+        sm: "1.1rem",
+      },
       backgroundImage: {
         "main-pattern": 'url("./images/bg-pattern.png")',
         "bg-black-image": 'url("./images/bg-black.png")',

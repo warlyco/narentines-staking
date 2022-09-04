@@ -13,7 +13,9 @@ export const FETCH_NFTS_BY_HOLDER = gql`
       profession {
         name
         dailyRewardRate
+        id
         resource {
+          id
           image
           mintAddress
           name

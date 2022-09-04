@@ -44,17 +44,25 @@ export const PRIMARY_REWARD_AMOUNT_PER_DAY = 3;
 
 export const MS_PER_DAY = 86400000;
 
-enum ProfessionName {
-  NONE = "NONE",
+export enum ProfessionNames {
   BANKER = "Banker",
-  LUMBERJACK = "Lumberjack",
-  SHEPHERD = "Shepherd",
   FISHERMAN = "Fisherman",
+  MINER = "Miner",
+  SHEPHERD = "Shepherd",
+  LUMBERJACK = "Lumberjack",
+}
+
+export enum ProfessionIds {
+  BANKER = "8716a284-5481-4340-b166-4c2bd9da4a78",
+  FISHERMAN = "ac2041be-89f0-429a-bb56-697b5805f50e",
+  MINER = "c35c9543-0510-4f48-8d3b-9a45a60361db",
+  SHEPHERD = "e0f980f4-2d5f-47b3-b8a0-9205c3469f40",
+  LUMBERJACK = "62f9aaa0-e1b7-438c-949d-3d8ff6db4e5a",
 }
 
 enum ResourceName {
   GOODS = "GOODS",
-  LUMBER = "Lumber",
+  WOOD = "Wood",
   IRON = "Iron",
   COTTON = "Cotton",
   FISH = "Fish",
@@ -64,12 +72,14 @@ type Resource = {
   image: string;
   name: ResourceName;
   mintAmount: number;
+  id: string;
 };
 
-type Profession = {
-  name: ProfessionName;
+export type Profession = {
+  name: ProfessionNames;
   image?: string;
   dailyRewardRate: number;
+  id: string;
   resource: Resource;
 };
 

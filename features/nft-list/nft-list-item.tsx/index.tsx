@@ -7,7 +7,15 @@ import StakeUnstakeButtons from "features/nft-card/stake-unstake-buttons";
 import { useCallback, useEffect, useState } from "react";
 import { WalletTypes } from "types";
 import dayjs from "dayjs";
-import { MS_PER_DAY, PRIMARY_REWARD_AMOUNT_PER_DAY } from "constants/constants";
+import {
+  MS_PER_DAY,
+  PRIMARY_REWARD_AMOUNT_PER_DAY,
+  Profession,
+  ProfessionIds,
+  ProfessionNames,
+} from "constants/constants";
+import { useQuery } from "@apollo/client";
+import { FETCH_PROFESSIONS } from "graphql/queries/fetch-professions";
 
 type Props = {
   activeWallet: WalletTypes;
@@ -15,10 +23,23 @@ type Props = {
   fetchNfts: () => Promise<void>;
 };
 
+const options = Object.keys(ProfessionNames).map((profession: string) => ({
+  // @ts-ignore
+  value: ProfessionIds[profession],
+  // @ts-ignore
+  text: ProfessionNames[profession],
+}));
+
 const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
   const [primaryRewardAmount, setPrimaryRewardAmount] = useState(0);
+  const [secondaryRewardAmount, setSecondaryRewardAmount] = useState(0);
+  const [secondaryRewardLabel, setSecondaryRewardLabel] = useState("Secondary");
+  const [selectedProfessionId, setSelectedProfessionId] = useState(
+    ProfessionIds.BANKER
+  );
+  const { loading, error, data: professionsData } = useQuery(FETCH_PROFESSIONS);
 
-  const calculatePrimaryReward = useCallback(() => {
+  const getStakingTime = useCallback(() => {
     const { timestamp, lastClaimTimestamp } = nft;
     const now = dayjs();
     let stakingTime;
@@ -29,14 +50,60 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
     }
     const timeSinceStakingInMs = now.diff(stakingTime);
     const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
-    const rewardAmount = timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY;
-    setPrimaryRewardAmount(rewardAmount);
+    return { timeSinceStakingInMs, timeSinceStakingInDays };
   }, [nft]);
 
+  const calculatePrimaryReward = useCallback(() => {
+    const { timeSinceStakingInDays } = getStakingTime();
+    let dailyRewardAmount = PRIMARY_REWARD_AMOUNT_PER_DAY;
+
+    if (nft?.profession?.id === ProfessionIds.BANKER) {
+      dailyRewardAmount += nft?.profession?.dailyRewardRate;
+    }
+
+    const rewardAmount = timeSinceStakingInDays * dailyRewardAmount;
+    setPrimaryRewardAmount(rewardAmount);
+  }, [getStakingTime, nft]);
+
+  const handleUpdateSelectedProfession = (e: any) => {
+    console.log(e.target);
+    setSelectedProfessionId(e.target.value);
+  };
+
+  const calculateSecondaryReward = useCallback(() => {
+    const { professions } = professionsData;
+    if (nft.profession.id === ProfessionIds.BANKER) {
+      setSecondaryRewardAmount(0);
+      return;
+    }
+    const profession = professions.find(
+      (profession: Profession) => profession.id === nft.profession.id
+    );
+    const { timeSinceStakingInDays } = getStakingTime();
+    const rewardAmount = timeSinceStakingInDays * profession?.dailyRewardRate;
+    setSecondaryRewardAmount(Math.floor(rewardAmount));
+  }, [professionsData, nft, getStakingTime]);
+
+  const updateSecondaryRewardLabel = useCallback(() => {
+    const { professions } = professionsData;
+    const profession = professions.find(
+      (profession: Profession) => profession.id === nft.profession.id
+    );
+    setSecondaryRewardLabel(profession?.resource?.name);
+  }, [professionsData, nft]);
+
   useEffect(() => {
-    if (!nft) return;
+    if (!nft || !professionsData) return;
     calculatePrimaryReward();
-  }, [calculatePrimaryReward, nft]);
+    calculateSecondaryReward();
+    updateSecondaryRewardLabel();
+  }, [
+    calculatePrimaryReward,
+    professionsData,
+    nft,
+    calculateSecondaryReward,
+    updateSecondaryRewardLabel,
+  ]);
 
   return (
     <div>
@@ -48,20 +115,59 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
                 {nft?.profession?.name}
               </div>
             )}
-            <div className="flex text-sm">
+            <div className="flex text-sm mb-2">
               <div>Staked:&nbsp;</div>
               <div>{dayjs(nft?.timestamp).format("MM/DD/YYYY @ h:mm A")}</div>
             </div>
-            <div className="flex text-sm mb-3">
-              <div>Est. reward amount:&nbsp;</div>
+            <div className="flex flex-col text-sm mb-3">
+              <div className="font-bold text-sm tracking-wide uppercase">
+                Rewards
+              </div>
               <div>
+                <span className="font-bold mr-2">$GOODS:</span>
                 {Number(primaryRewardAmount.toFixed(2)) === 0
                   ? 0
                   : Number(primaryRewardAmount.toFixed(2))}{" "}
-                $GOODS
+                (
+                {nft.profession.id === ProfessionIds.BANKER
+                  ? PRIMARY_REWARD_AMOUNT_PER_DAY +
+                    nft?.profession?.dailyRewardRate
+                  : PRIMARY_REWARD_AMOUNT_PER_DAY}
+                /day)
               </div>
+              {nft.profession.id === ProfessionIds.BANKER ? (
+                <div>&nbsp;</div>
+              ) : (
+                <div>
+                  <span className="font-bold mr-2">
+                    {secondaryRewardLabel}:
+                  </span>
+                  {Number(secondaryRewardAmount.toFixed(2)) === 0
+                    ? 0
+                    : Number(secondaryRewardAmount)}{" "}
+                  ({nft?.profession?.dailyRewardRate}/day)
+                </div>
+              )}
             </div>
           </>
+        )}
+        {activeWallet === WalletTypes.USER && (
+          <label className="flex flex-col my-4">
+            <span className="font-bold uppercase text-sm tracking-wider">
+              Choose Profession
+            </span>
+            <select
+              className="bg-amber-200 text-green-800 p-1 px-2 rounded font-bold border border-green-800 mb-4"
+              value={selectedProfessionId}
+              onChange={handleUpdateSelectedProfession}
+            >
+              {options.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.text}
+                </option>
+              ))}
+            </select>
+          </label>
         )}
         <div className="flex space-x-2">
           <div
@@ -75,6 +181,7 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
               nft={nft}
               activeWallet={activeWallet}
               fetchNfts={fetchNfts}
+              professionId={selectedProfessionId}
             />
           </div>
           {activeWallet === WalletTypes.STAKING && (
