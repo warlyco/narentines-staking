@@ -4,12 +4,21 @@ export const FETCH_NFTS_BY_HOLDER = gql`
   query FetchNftsByHolder($holderWalletAddress: String) {
     nfts(where: { holderWalletAddress: { _eq: $holderWalletAddress } }) {
       timestamp
+      lastClaimTimestamp
       ownerWalletAddress
       name
       mintAddress
       image
       holderWalletAddress
-      lastClaimTimestamp
+      profession {
+        name
+        dailyRewardRate
+        resource {
+          image
+          mintAddress
+          name
+        }
+      }
     }
   }
 `;

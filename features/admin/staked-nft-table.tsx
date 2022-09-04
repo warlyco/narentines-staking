@@ -9,22 +9,12 @@ import { useQuery } from "@apollo/client";
 import { FETCH_NFTS_BY_HOLDER_AND_OWNER } from "graphql/queries/fetch-nfts-by-holder-and-owner";
 import { FETCH_NFTS_BY_HOLDER } from "graphql/queries/fetch-nfts-by-holder";
 import {
+  CollectionNft,
   MS_PER_DAY,
   PRIMARY_REWARD_AMOUNT_PER_DAY,
   STAKING_WALLET_ADDRESS,
 } from "constants/constants";
 import { useEffect, useState } from "react";
-import { Collection } from "@metaplex-foundation/mpl-token-metadata";
-
-type CollectionNft = {
-  image: string;
-  name: string;
-  unclaimedAmount: number;
-  timestamp: number;
-  lastClaimTimestamp: string | null;
-  mintAddress: string;
-  ownerWalletAddress: string | null;
-};
 
 const defaultData: CollectionNft[] = [];
 
@@ -75,10 +65,18 @@ const columns = [
     header: () => <span className="block w-32">Unclaimed</span>,
     cell: (info) => <div className="px-2 font-bold">{info.getValue()}</div>,
   }),
+  columnHelper.accessor("profession", {
+    header: () => <span className="block w-32">Profession</span>,
+    cell: (info) => (
+      <div className="px-2 font-bold">
+        {info.cell.row.original.profession?.name}
+      </div>
+    ),
+  }),
   columnHelper.accessor("ownerWalletAddress", {
     header: "Owner",
     cell: (info) => (
-      <div className="w-48 px-2 truncate">
+      <div className="w-32 px-2 truncate">
         <a
           target="_blank"
           rel="noopener noreferrer"

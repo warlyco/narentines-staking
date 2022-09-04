@@ -43,3 +43,43 @@ export const MEMO_PROGRAM_ID = new PublicKey(
 export const PRIMARY_REWARD_AMOUNT_PER_DAY = 3;
 
 export const MS_PER_DAY = 86400000;
+
+enum ProfessionName {
+  NONE = "NONE",
+  BANKER = "Banker",
+  LUMBERJACK = "Lumberjack",
+  SHEPHERD = "Shepherd",
+  FISHERMAN = "Fisherman",
+}
+
+enum ResourceName {
+  GOODS = "GOODS",
+  LUMBER = "Lumber",
+  IRON = "Iron",
+  COTTON = "Cotton",
+  FISH = "Fish",
+}
+
+type Resource = {
+  image: string;
+  name: ResourceName;
+  mintAmount: number;
+};
+
+type Profession = {
+  name: ProfessionName;
+  image?: string;
+  dailyRewardRate: number;
+  resource: Resource;
+};
+
+export type CollectionNft = {
+  image: string;
+  name: string;
+  unclaimedAmount: number;
+  timestamp: number;
+  lastClaimTimestamp: string | null;
+  mintAddress: string;
+  ownerWalletAddress: string | null;
+  profession: Profession;
+};

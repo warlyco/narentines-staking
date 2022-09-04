@@ -43,6 +43,11 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
       <NftCard nft={nft}>
         {activeWallet === WalletTypes.STAKING && (
           <>
+            {nft?.profession?.name && (
+              <div className="absolute top-2 right-2 bg-amber-200 text-green-800 p-2 rounded">
+                {nft?.profession?.name}
+              </div>
+            )}
             <div className="flex text-sm">
               <div>Staked:&nbsp;</div>
               <div>{dayjs(nft?.timestamp).format("MM/DD/YYYY @ h:mm A")}</div>

@@ -18,6 +18,15 @@ export const FETCH_NFTS_BY_HOLDER_AND_OWNER = gql`
       mintAddress
       image
       holderWalletAddress
+      profession {
+        name
+        dailyRewardRate
+        resource {
+          image
+          mintAddress
+          name
+        }
+      }
     }
   }
 `;
