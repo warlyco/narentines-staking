@@ -6,6 +6,7 @@ export const FETCH_PROFESSIONS = gql`
       dailyRewardRate
       id
       name
+      image
       resource {
         id
         image
