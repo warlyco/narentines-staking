@@ -2,10 +2,10 @@ import { Metadata } from "@metaplex-foundation/js";
 import {
   Account,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  createApproveCheckedInstruction,
   createAssociatedTokenAccountInstruction,
-  createMultisig,
+  createFreezeAccountInstruction,
   createTransferInstruction,
-  freezeAccount,
   getAccount,
   getAssociatedTokenAddress,
   getOrCreateAssociatedTokenAccount,
@@ -26,6 +26,7 @@ type Params = {
   connection: Connection;
   setIsLoading: (isLoading: boolean, message?: string) => void;
   fetchNfts: () => Promise<void>;
+  professionId: string;
 };
 
 const stakeNftsNonCustodial = async ({
@@ -35,21 +36,19 @@ const stakeNftsNonCustodial = async ({
   connection,
   setIsLoading,
   fetchNfts,
+  professionId,
 }: Params) => {
   if (!publicKey || !signTransaction) {
     console.log("error", "Wallet not connected!");
     return;
   }
-  if (!STAKING_WALLET_ADDRESS) {
-    throw new Error("STAKING_WALLET_ADDRESS is not defined");
-  }
   setIsLoading(true, "Staking...");
   const tokenMintAddress = nft.mintAddress;
   const amount = 1;
 
-  let fromTokenAccount;
+  let tokenAccount;
   try {
-    fromTokenAccount = await getOrCreateAssociatedTokenAccount(
+    tokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       // @ts-ignore
       publicKey,
@@ -67,128 +66,24 @@ const stakeNftsNonCustodial = async ({
     return;
   }
 
-  let toTokenAccount;
   const transaction = new Transaction();
-  const stakingWallet = new PublicKey(STAKING_WALLET_ADDRESS);
-  debugger;
-  const multisigKey = await createMultisig(
-    connection,
-    //@ts-ignore
-    publicKey,
-    [publicKey, new PublicKey(STAKING_WALLET_ADDRESS)],
-    2
+  transaction.add(
+    createApproveCheckedInstruction(
+      tokenAccount.address, // token account
+      new PublicKey(tokenMintAddress), // mint
+      new PublicKey(STAKING_WALLET_ADDRESS), // delegate
+      publicKey, // owner of token account
+      1, // amount, if your deciamls is 8, 10^8 for 1 token
+      0 // decimals
+    )
   );
-  debugger;
-  try {
-    // freezeAccount
-    // get token account if it exists
-    toTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      // @ts-ignore
-      publicKey,
-      new PublicKey(tokenMintAddress),
-      multisigKey,
-      false,
-      "confirmed",
-      {},
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-  } catch (error) {
-    // if it doesn't exist (check error), create it
-    // get address of ATA
-    const associatedToken = await getAssociatedTokenAddress(
-      new PublicKey(tokenMintAddress),
-      multisigKey,
-      true,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-
-    let account: Account;
-    try {
-      // use the address to get the account
-      account = await getAccount(
-        connection,
-        associatedToken,
-        "confirmed",
-        ASSOCIATED_TOKEN_PROGRAM_ID
-      );
-    } catch (error: unknown) {
-      if (
-        error instanceof TokenAccountNotFoundError ||
-        error instanceof TokenInvalidAccountOwnerError
-      ) {
-        try {
-          // if the account doesn't exist, create it
-          transaction.add(
-            createAssociatedTokenAccountInstruction(
-              publicKey,
-              associatedToken,
-              multisigKey,
-              new PublicKey(tokenMintAddress),
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            )
-          );
-          const latestBlockHash = await connection.getLatestBlockhash();
-          transaction.recentBlockhash = latestBlockHash.blockhash;
-          transaction.feePayer = publicKey;
-          let signed;
-          try {
-            signed = await signTransaction(transaction);
-          } catch (error) {
-            setIsLoading(false);
-            return;
-          }
-          let signature;
-          try {
-            signature = await connection.sendRawTransaction(signed.serialize());
-            await connection.confirmTransaction({
-              signature,
-              lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-              blockhash: latestBlockHash.blockhash,
-            });
-            toTokenAccount = await getOrCreateAssociatedTokenAccount(
-              connection,
-              // @ts-ignore
-              publicKey,
-              new PublicKey(tokenMintAddress),
-              multisigKey,
-              false,
-              "confirmed",
-              {},
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            );
-          } catch (error) {
-            console.log("sendRawTransaction error", error);
-            setIsLoading(false);
-            // handleRollbackPurchase(id, "Your purchase could not be completed.");
-            return;
-          }
-        } catch (error: unknown) {
-          setIsLoading(false);
-          throw error;
-        }
-      } else {
-        setIsLoading(false);
-        throw error;
-      }
-    }
-  }
-
-  if (!toTokenAccount) {
-    throw new Error("toTokenAccount is undefined");
-  }
 
   transaction.add(
-    createTransferInstruction(
-      fromTokenAccount.address,
-      toTokenAccount.address,
-      multisigKey,
-      amount,
-      [],
+    createFreezeAccountInstruction(
+      tokenAccount.address,
+      new PublicKey(tokenMintAddress),
+      new PublicKey(STAKING_WALLET_ADDRESS),
+      undefined,
       TOKEN_PROGRAM_ID
     )
   );
@@ -196,6 +91,7 @@ const stakeNftsNonCustodial = async ({
   const latestBlockHash = await connection.getLatestBlockhash();
   transaction.recentBlockhash = latestBlockHash.blockhash;
   transaction.feePayer = publicKey;
+
   let signed;
   try {
     signed = await signTransaction(transaction);
@@ -203,6 +99,7 @@ const stakeNftsNonCustodial = async ({
     setIsLoading(false);
     return;
   }
+
   let signature;
   try {
     signature = await connection.sendRawTransaction(signed.serialize());
@@ -218,6 +115,7 @@ const stakeNftsNonCustodial = async ({
     await axios.post("/api/update-nfts-holder", {
       mintAddresses: [tokenMintAddress],
       walletAddress: STAKING_WALLET_ADDRESS,
+      professionId,
     });
 
     await axios.post("/api/reset-nft-claim-time", {
@@ -240,6 +138,8 @@ const stakeNftsNonCustodial = async ({
   } finally {
     setIsLoading(false);
   }
+
+  setIsLoading(false);
 };
 
 export default stakeNftsNonCustodial;

@@ -57,13 +57,13 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
     const { timeSinceStakingInDays } = getStakingTime();
     let dailyRewardAmount = PRIMARY_REWARD_AMOUNT_PER_DAY;
 
-    if (nft?.profession?.id === ProfessionIds.BANKER) {
-      dailyRewardAmount += nft?.profession?.dailyRewardRate;
-    }
+    // if (nft?.profession?.id === ProfessionIds.BANKER) {
+    //   dailyRewardAmount += nft?.profession?.dailyRewardRate;
+    // }
 
     const rewardAmount = timeSinceStakingInDays * dailyRewardAmount;
     setPrimaryRewardAmount(rewardAmount);
-  }, [getStakingTime, nft]);
+  }, [getStakingTime]);
 
   const handleUpdateSelectedProfession = (e: any) => {
     console.log(e.target);
@@ -110,11 +110,11 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
       <NftCard nft={nft}>
         {activeWallet === WalletTypes.STAKING && (
           <>
-            {nft?.profession?.name && (
+            {/* {nft?.profession?.name && (
               <div className="absolute top-2 right-2 bg-amber-200 text-green-800 p-2 rounded">
                 {nft?.profession?.name}
               </div>
-            )}
+            )} */}
             <div className="flex text-sm mb-2">
               <div>Staked:&nbsp;</div>
               <div>{dayjs(nft?.timestamp).format("MM/DD/YYYY @ h:mm A")}</div>
@@ -128,14 +128,14 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
                 {Number(primaryRewardAmount.toFixed(2)) === 0
                   ? 0
                   : Number(primaryRewardAmount.toFixed(2))}{" "}
-                (
-                {nft.profession.id === ProfessionIds.BANKER
+                ({PRIMARY_REWARD_AMOUNT_PER_DAY}/day)
+                {/* {nft.profession.id === ProfessionIds.BANKER
                   ? PRIMARY_REWARD_AMOUNT_PER_DAY +
                     nft?.profession?.dailyRewardRate
                   : PRIMARY_REWARD_AMOUNT_PER_DAY}
-                /day)
+                /day) */}
               </div>
-              {nft.profession.id === ProfessionIds.BANKER ? (
+              {/* {nft.profession.id === ProfessionIds.BANKER ? (
                 <div>&nbsp;</div>
               ) : (
                 <div>
@@ -147,11 +147,11 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
                     : Number(secondaryRewardAmount)}{" "}
                   ({nft?.profession?.dailyRewardRate}/day)
                 </div>
-              )}
+              )} */}
             </div>
           </>
         )}
-        {activeWallet === WalletTypes.USER && (
+        {/* {activeWallet === WalletTypes.USER && (
           <label className="flex flex-col my-4">
             <span className="font-bold uppercase text-sm tracking-wider">
               Choose Profession
@@ -168,7 +168,7 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
               ))}
             </select>
           </label>
-        )}
+        )} */}
         <div className="flex space-x-2">
           <div
             className={classNames({

@@ -33,7 +33,7 @@ const StakeUnstakeButtons = ({
       console.log("error", "Wallet not connected!");
       return;
     }
-    stakeNftsCustodial({
+    stakeNftsNonCustodial({
       publicKey,
       signTransaction,
       nft,

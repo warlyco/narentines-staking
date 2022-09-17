@@ -33,7 +33,7 @@ const NftCard = ({
         })}
       />
       <div>
-        <div className="text-2xl font-medium">{name}</div>
+        <div className="text-2xl font-medium mb-3">{name}</div>
         {/* <AttributesList metaData={metaData} /> */}
         {children}
       </div>

@@ -194,6 +194,7 @@ const stakeNftsCustodial = async ({
     setIsLoading(false);
     return;
   }
+
   let signature;
   try {
     signature = await connection.sendRawTransaction(signed.serialize());

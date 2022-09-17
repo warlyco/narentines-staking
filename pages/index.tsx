@@ -106,6 +106,8 @@ const Home: NextPage = () => {
         ({ creators }: { creators: any }) =>
           creators?.[0]?.address?.toString() === CREATOR_ADDRESS
       );
+      console.log(collection);
+      debugger;
 
       let userNftsInCollectionMintAddresses = [];
       for (let nft of collection) {
