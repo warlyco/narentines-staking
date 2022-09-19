@@ -9,7 +9,7 @@ export const FETCH_NFTS_BY_MINT_ADDRESSES = gql`
       name
       mintAddress
       image
-      holderWalletAddress
+      isFrozen
       profession {
         name
         dailyRewardRate

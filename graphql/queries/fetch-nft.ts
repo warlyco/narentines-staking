@@ -5,7 +5,6 @@ export const FETCH_NFT = gql`
     nfts(where: { mintAddress: { _eq: $mintAddress } }) {
       name
       image
-      holderWalletAddress
       mintAddress
       timestamp
       lastClaimTimestamp

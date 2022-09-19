@@ -9,7 +9,6 @@ export const UPDATE_NFT_CLAIM_TIME = gql`
       pk_columns: { mintAddress: $mintAddress }
       _set: { lastClaimTimestamp: $lastClaimTimestamp }
     ) {
-      holderWalletAddress
       ownerWalletAddress
       lastClaimTimestamp
       image

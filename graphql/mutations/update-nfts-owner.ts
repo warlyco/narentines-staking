@@ -11,7 +11,6 @@ export const UPDATE_NFTS_OWNER = gql`
       _set: { ownerWalletAddress: $walletAddress, timestamp: $timestamp }
     ) {
       returning {
-        holderWalletAddress
         image
         mintAddress
         name

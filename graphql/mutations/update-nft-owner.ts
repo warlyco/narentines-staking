@@ -10,7 +10,6 @@ export const UPDATE_NFT_OWNER = gql`
       pk_columns: { mintAddress: $mintAddress }
       _set: { ownerWalletAddress: $walletAddress, timestamp: $timestamp }
     ) {
-      holderWalletAddress
       ownerWalletAddress
       image
       mintAddress

@@ -92,15 +92,16 @@ const columns = [
 
 function StakedNftTable() {
   const [data, setData] = useState(() => [...defaultData]);
-  const {
-    loading,
-    error,
-    data: fetchedData,
-  } = useQuery(FETCH_NFTS_BY_HOLDER, {
-    variables: {
-      holderWalletAddress: STAKING_WALLET_ADDRESS,
-    },
-  });
+  //  fetch by isFrozen
+  // const {
+  //   loading,
+  //   error,
+  //   data: fetchedData,
+  // } = useQuery(FETCH_NFTS_BY_HOLDER, {
+  //   variables: {
+  //     holderWalletAddress: STAKING_WALLET_ADDRESS,
+  //   },
+  // });
 
   const table = useReactTable({
     data,

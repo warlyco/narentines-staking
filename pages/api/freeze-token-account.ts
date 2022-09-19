@@ -37,6 +37,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
 
   let tokenAccount;
   try {
+    console.log("Fetching token account");
     tokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       // @ts-ignore
@@ -58,7 +59,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
   try {
     let confirmation;
     const transaction = new Transaction();
-    console.log(1);
+    console.log("Create freeze tx");
 
     const MINT_AUTHORITY = "H2yUke2i77yi1aEMisFas17fjShUahvnihWTTdjuvh71";
     transaction.add(
@@ -75,12 +76,13 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
     transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = new PublicKey(STAKING_WALLET_ADDRESS);
 
+    console.log("Send and confirm freeze tx");
     confirmation = await sendAndConfirmTransaction(
       connection,
       transaction,
       [keypair],
       {
-        commitment: "finalized",
+        commitment: "confirmed",
         maxRetries: 10,
       }
     );

@@ -13,8 +13,7 @@ const NftCard = ({
   nft: any;
   children: ReactNode | null;
 }) => {
-  const { holderWalletAddress, image, mintAddress, name, ownerWalletAddress } =
-    nft;
+  const { image, mintAddress, name, ownerWalletAddress } = nft;
 
   return (
     <div

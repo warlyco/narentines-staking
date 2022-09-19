@@ -211,12 +211,6 @@ const stakeNftsNonCustodial = async ({
       "finalized"
     );
 
-    await axios.post("/api/update-nfts-holder", {
-      mintAddresses: [tokenMintAddress],
-      walletAddress: STAKING_WALLET_ADDRESS,
-      professionId,
-    });
-
     await axios.post("/api/reset-nft-claim-time", {
       mintAddress: tokenMintAddress,
     });

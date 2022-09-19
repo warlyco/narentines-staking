@@ -9,7 +9,7 @@ export const FETCH_NFTS_BY_OWNER = gql`
       name
       mintAddress
       image
-      holderWalletAddress
+      isFrozen
       profession {
         name
         id

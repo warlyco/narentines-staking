@@ -1,14 +1,11 @@
 import gql from "graphql-tag";
 
-export const FETCH_NFTS_BY_HOLDER_AND_OWNER = gql`
-  query FetchNftsByHolderAndOwner(
-    $holderWalletAddress: String
-    $ownerWalletAddress: String
-  ) {
+export const FETCH_FROZEN_NFTS_BY_OWNER = gql`
+  query FetchFrozenNftsByOwner($ownerWalletAddress: String) {
     nfts(
       where: {
-        holderWalletAddress: { _eq: $holderWalletAddress }
-        _and: { ownerWalletAddress: { _eq: $ownerWalletAddress } }
+        ownerWalletAddress: { _eq: $ownerWalletAddress }
+        _and: { isFrozen: { _eq: true } }
       }
     ) {
       timestamp
@@ -17,7 +14,6 @@ export const FETCH_NFTS_BY_HOLDER_AND_OWNER = gql`
       name
       mintAddress
       image
-      holderWalletAddress
       profession {
         name
         dailyRewardRate
