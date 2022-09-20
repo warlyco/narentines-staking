@@ -5,7 +5,8 @@ import { UPDATE_NFT_FROZEN_STATE } from "graphql/mutations/update-nft-frozen-sta
 const updateNftFrozenState: NextApiHandler = async (req, response) => {
   const { mintAddress, isFrozen } = req.body;
 
-  if (!mintAddress || !isFrozen) throw new Error("Missing required fields");
+  if (!mintAddress || isFrozen === undefined)
+    throw new Error("Missing required fields");
 
   try {
     const { update_nfts_by_pk } = await request({

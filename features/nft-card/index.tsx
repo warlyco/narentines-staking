@@ -3,8 +3,6 @@ import axios from "axios";
 import classNames from "classnames";
 import bg from "public/images/single-item-bg.png";
 import { ReactNode, useEffect, useState } from "react";
-import AttributesList from "features/nft-card/attributes-list";
-import LoadingNftCard from "features/nft-card/loading-nft-card";
 
 const NftCard = ({
   nft,
@@ -26,7 +24,7 @@ const NftCard = ({
         height={250}
         width={250}
         src={image}
-        alt="raffle item"
+        alt="Nft image"
         className={classNames({
           "w-full object-cover lg:max-h-[280px] mb-1 bg-gray-400": true,
         })}

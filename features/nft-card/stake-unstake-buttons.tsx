@@ -4,7 +4,6 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import { ProfessionIds, STAKING_WALLET_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
-import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 import { WalletTypes } from "types";
 import stakeNftsCustodial from "utils/stake-nfts-custodial";
@@ -15,6 +14,7 @@ type Props = {
   nft: Metadata;
   professionId: ProfessionIds;
   fetchNfts: () => Promise<void>;
+  removeFromDispayedNfts: (nft: any) => void;
 };
 
 const StakeUnstakeButtons = ({
@@ -22,6 +22,7 @@ const StakeUnstakeButtons = ({
   nft,
   fetchNfts,
   professionId,
+  removeFromDispayedNfts,
 }: Props) => {
   const { setIsLoading, setLoadingMessage } = useIsLoading();
 
@@ -34,6 +35,7 @@ const StakeUnstakeButtons = ({
       return;
     }
     stakeNftsNonCustodial({
+      removeFromDispayedNfts,
       publicKey,
       signTransaction,
       nft,
@@ -55,16 +57,15 @@ const StakeUnstakeButtons = ({
     setIsLoading(true, "Unstaking...");
     const tokenMintAddress = nft.mintAddress;
 
+    // TODO: claim rewards
+
     try {
-      const { data, status } = await axios.post("/api/unstake", {
-        mintAddress: tokenMintAddress,
-        publicKey: publicKey.toString(),
+      const { data, status } = await axios.post("/api/thaw-token-account", {
+        tokenMintAddress,
+        walletAddress: publicKey.toString(),
       });
       if (status === 200) {
-        axios.post("/api/update-nfts-holder", {
-          mintAddresses: [tokenMintAddress],
-          walletAddress: publicKey?.toString(),
-        });
+        // TODO: update timestamp
       }
       toast.custom(
         <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
@@ -72,7 +73,7 @@ const StakeUnstakeButtons = ({
         </div>
       );
 
-      fetchNfts();
+      removeFromDispayedNfts(tokenMintAddress);
     } catch (error) {
       console.error(error);
     } finally {

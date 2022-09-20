@@ -61,7 +61,12 @@ const Home: NextPage = () => {
 
   const [
     fetchNftsFromDb,
-    { loading: isLoadingDbNfts, error: fetchFromDbError, data: nftsFromDb },
+    {
+      loading: isLoadingDbNfts,
+      error: fetchFromDbError,
+      data: nftsFromDb,
+      refetch,
+    },
   ] = useLazyQuery(FETCH_NFTS_BY_MINT_ADDRESSES, {
     variables: {
       mintAddresses: addressesToFetchFromDb,
@@ -72,17 +77,22 @@ const Home: NextPage = () => {
     if (!nftsFromDb?.nfts?.length || !nftMetasFromMetaplex?.length) return;
     let ownerMintAddresses = [];
 
+    let didUpdateNft = false;
     nftMetasFromMetaplex?.forEach((nft) => {
       const nftFromDb = nftsFromDb.nfts.find(
         (nftFromDb: any) => nftFromDb.mintAddress === nft.mintAddress.toString()
       );
       // @ts-ignore
       if (nft.isFrozen !== nftFromDb.isFrozen) {
+        didUpdateNft = true;
         axios.post("/api/update-nft-frozen-state", {
           mintAddress: nftFromDb.mintAddress,
           // @ts-ignore
           isFrozen: nft.isFrozen,
         });
+      }
+      if (didUpdateNft) {
+        refetch();
       }
     });
 

@@ -1,6 +1,7 @@
 import { Metadata, Nft } from "@metaplex-foundation/js";
 import { CREATOR_ADDRESS } from "constants/constants";
 import LoadingNftCard from "features/nft-card/loading-nft-card";
+import { useEffect, useState } from "react";
 import { WalletTypes } from "types";
 import NftListItem from "./nft-list-item.tsx";
 
@@ -11,6 +12,20 @@ type Props = {
   fetchNfts: () => Promise<void>;
 };
 const NftList = ({ nfts, isLoadingNfts, activeWallet, fetchNfts }: Props) => {
+  const [displayedNfts, setDisplayedNfts] = useState(nfts);
+
+  const handleRemoveFromDispayedNfts = (mintAddress: any) => {
+    const newDisplayedNfts = displayedNfts?.filter(
+      (displayedNft) => displayedNft.mintAddress !== mintAddress
+    );
+    if (!newDisplayedNfts?.length) return;
+    setDisplayedNfts(newDisplayedNfts);
+  };
+
+  useEffect(() => {
+    setDisplayedNfts(nfts);
+  }, [nfts]);
+
   const emptyStateMessage =
     activeWallet === WalletTypes.USER
       ? "You have no Narentines in your wallet"
@@ -25,9 +40,10 @@ const NftList = ({ nfts, isLoadingNfts, activeWallet, fetchNfts }: Props) => {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10 mb-8">
         {isLoadingNfts && <LoadingNftCard />}
         {!isLoadingNfts &&
-          !!nfts &&
-          nfts.map((nft) => (
+          !!displayedNfts &&
+          displayedNfts.map((nft) => (
             <NftListItem
+              removeFromDispayedNfts={handleRemoveFromDispayedNfts}
               fetchNfts={fetchNfts}
               nft={nft}
               key={String(nft.mintAddress)}

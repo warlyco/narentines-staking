@@ -56,8 +56,6 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
   try {
     let confirmation;
     const transaction = new Transaction();
-    console.log(1);
-
     const metaplex = Metaplex.make(connection);
     const nft = await metaplex
       .nfts()

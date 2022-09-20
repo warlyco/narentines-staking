@@ -18,6 +18,7 @@ import { useQuery } from "@apollo/client";
 import { FETCH_PROFESSIONS } from "graphql/queries/fetch-professions";
 
 type Props = {
+  removeFromDispayedNfts: (nft: Nft) => void;
   activeWallet: WalletTypes;
   nft: any;
   fetchNfts: () => Promise<void>;
@@ -30,7 +31,12 @@ const options = Object.keys(ProfessionNames).map((profession: string) => ({
   text: ProfessionNames[profession],
 }));
 
-const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
+const NftListItem = ({
+  nft,
+  activeWallet,
+  fetchNfts,
+  removeFromDispayedNfts,
+}: Props) => {
   const [primaryRewardAmount, setPrimaryRewardAmount] = useState(0);
   const [secondaryRewardAmount, setSecondaryRewardAmount] = useState(0);
   const [secondaryRewardLabel, setSecondaryRewardLabel] = useState("Secondary");
@@ -178,6 +184,7 @@ const NftListItem = ({ nft, activeWallet, fetchNfts }: Props) => {
             })}
           >
             <StakeUnstakeButtons
+              removeFromDispayedNfts={removeFromDispayedNfts}
               nft={nft}
               activeWallet={activeWallet}
               fetchNfts={fetchNfts}

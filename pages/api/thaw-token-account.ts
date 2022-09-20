@@ -27,6 +27,7 @@ import {
   createFreezeDelegatedAccountInstruction,
   createThawDelegatedAccountInstruction,
 } from "@metaplex-foundation/mpl-token-metadata";
+import { Metaplex } from "@metaplex-foundation/js";
 
 const freezeTokenAccount: NextApiHandler = async (req, response) => {
   const { tokenMintAddress, walletAddress } = req.body;
@@ -62,15 +63,26 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
     return;
   }
 
-  let confirmation;
   try {
+    let confirmation;
     const transaction = new Transaction();
+    const metaplex = Metaplex.make(connection);
+    const nft = await metaplex
+      .nfts()
+      .findByMint({ mintAddress: new PublicKey(tokenMintAddress) })
+      .run();
+
+    const { mintAuthorityAddress } = nft.mint;
+    if (!mintAuthorityAddress) {
+      response.status(500).json({ error: "Could not find mint authority" });
+      return;
+    }
 
     transaction.add(
       createThawDelegatedAccountInstruction({
         delegate: new PublicKey(STAKING_WALLET_ADDRESS),
         tokenAccount: tokenAccount.address,
-        edition: new PublicKey(NARENTINES_MINT_AUTHORITY),
+        edition: mintAuthorityAddress,
         mint: new PublicKey(tokenMintAddress),
         tokenProgram: TOKEN_PROGRAM_ID,
       })

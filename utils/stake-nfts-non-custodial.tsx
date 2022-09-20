@@ -18,6 +18,7 @@ import {
   Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
+  SolanaJSONRPCError,
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
@@ -34,6 +35,7 @@ type Params = {
   setIsLoading: (isLoading: boolean, message?: string) => void;
   fetchNfts: () => Promise<void>;
   professionId: string;
+  removeFromDispayedNfts: (nft: any) => void;
 };
 
 const stakeNftsNonCustodial = async ({
@@ -44,6 +46,7 @@ const stakeNftsNonCustodial = async ({
   setIsLoading,
   fetchNfts,
   professionId,
+  removeFromDispayedNfts,
 }: Params) => {
   if (!publicKey || !signTransaction) {
     console.log("error", "Wallet not connected!");
@@ -154,26 +157,29 @@ const stakeNftsNonCustodial = async ({
     console.log({ data, signature });
 
     toast.custom(
-      <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+      <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
         <div className="font-bold text-3xl">Staked!</div>
         <a
-          className="font-bold text-3xl"
+          className="underline"
           href={`https://explorer.solana.com/tx/${signature}`}
+          target="_blank"
+          rel="noreferrer"
         >
           View on Solana Explorer
         </a>
       </div>
     );
 
-    setTimeout(() => {
-      fetchNfts();
-      setIsLoading(false);
-    }, 5000);
-  } catch (error) {
+    removeFromDispayedNfts(tokenMintAddress);
+  } catch (error: any) {
     console.log("could not confirm", error);
+    if (error.message.includes("Node is behind by")) {
+      toast.error("Solana node is behind. Please try again later.");
+    }
     // handleRollbackPurchase(id, "Your purchase could not be completed.");
-    setIsLoading(false);
     return;
+  } finally {
+    setIsLoading(false);
   }
 };
 
