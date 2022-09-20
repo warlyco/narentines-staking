@@ -48,11 +48,14 @@ const addCollectionNftToDb: NextApiHandler = async (req, response) => {
     const metaplex = Metaplex.make(connection);
     const nftsFromMetaplex = await metaplex
       .nfts()
+      // @ts-ignore
       .findAllByMintList(mintList)
       .run();
 
     for (let nft of nftsFromMetaplex) {
+      // @ts-ignore
       let fullNft = await metaplex.nfts().load(nft).run();
+      // @ts-ignore
       const mappedNft = mapNft(fullNft);
       nfts.push(mappedNft);
       const { name, image, address, uri } = mappedNft;
