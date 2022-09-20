@@ -54,7 +54,6 @@ const stakeNftsNonCustodial = async ({
   }
   setIsLoading(true, "Staking...");
   const tokenMintAddress = nft.mintAddress;
-  const amount = 1;
 
   const { data: tokenAccount } = await axios.post("/api/get-token-account", {
     tokenMintAddress,
@@ -67,6 +66,45 @@ const stakeNftsNonCustodial = async ({
 
   const amountOfSol = 0.0001;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
+  const paymentTransaction = new Transaction();
+  paymentTransaction.add(
+    SystemProgram.transfer({
+      fromPubkey: publicKey,
+      toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+      lamports: solInLamports,
+    })
+  );
+
+  const paymentLatestBlockHash = await connection.getLatestBlockhash();
+  paymentTransaction.recentBlockhash = paymentLatestBlockHash.blockhash;
+  paymentTransaction.feePayer = publicKey;
+
+  let paymentTxSigned;
+  try {
+    paymentTxSigned = await signTransaction(paymentTransaction);
+  } catch (error) {
+    setIsLoading(false);
+    return;
+  }
+
+  let paymentTxSignature;
+  try {
+    paymentTxSignature = await connection.sendRawTransaction(
+      paymentTxSigned.serialize()
+    );
+    await connection.confirmTransaction(
+      {
+        signature: paymentTxSignature,
+        lastValidBlockHeight: paymentLatestBlockHash.lastValidBlockHeight,
+        blockhash: paymentLatestBlockHash.blockhash,
+      },
+      "finalized"
+    );
+  } catch (error) {
+    console.error(error);
+    setIsLoading(false);
+    return;
+  }
 
   const transaction = new Transaction();
   transaction.add(
@@ -118,18 +156,24 @@ const stakeNftsNonCustodial = async ({
     toast.custom(
       <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
         <div className="font-bold text-3xl">Staked!</div>
+        <a
+          className="font-bold text-3xl"
+          href={`https://explorer.solana.com/tx/${signature}`}
+        >
+          View on Solana Explorer
+        </a>
       </div>
     );
 
     setTimeout(() => {
       fetchNfts();
-    }, 1000);
+      setIsLoading(false);
+    }, 5000);
   } catch (error) {
     console.log("could not confirm", error);
     // handleRollbackPurchase(id, "Your purchase could not be completed.");
-    return;
-  } finally {
     setIsLoading(false);
+    return;
   }
 };
 

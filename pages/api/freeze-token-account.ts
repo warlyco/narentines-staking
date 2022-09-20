@@ -100,8 +100,9 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
     response.json({ confirmation });
     return;
   } catch (error) {
-    response.status(500).json({ error });
-    console.error(error);
+    // if (error?.includes('Node is behind by ')))
+    response.status(500).send(error);
+    console.error("the error is:", error);
     return;
   }
 };
