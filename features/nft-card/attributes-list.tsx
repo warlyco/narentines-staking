@@ -1,4 +1,4 @@
-import { JsonMetadata, JsonMetadataAttribute } from "@metaplex-foundation/js";
+import { JsonMetadata } from "@metaplex-foundation/js";
 
 const AttributesList = ({ metaData }: { metaData: JsonMetadata }) => {
   const { attributes } = metaData;
