@@ -23,7 +23,10 @@ import {
   Transaction,
 } from "@solana/web3.js";
 import axios from "axios";
-import { STAKING_WALLET_ADDRESS } from "constants/constants";
+import {
+  STAKING_COST_IN_SOL,
+  STAKING_WALLET_ADDRESS,
+} from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
 import toast from "react-hot-toast";
 
@@ -67,7 +70,7 @@ const stakeNftsNonCustodial = async ({
     throw new Error("tokenAccount is undefined");
   }
 
-  const amountOfSol = 0.0001;
+  const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
   const paymentTransaction = new Transaction();
   paymentTransaction.add(

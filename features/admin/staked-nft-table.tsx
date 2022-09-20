@@ -6,8 +6,6 @@ import {
 } from "@tanstack/react-table";
 import dayjs from "dayjs";
 import { useQuery } from "@apollo/client";
-import { FETCH_NFTS_BY_HOLDER_AND_OWNER } from "graphql/queries/fetch-nfts-by-holder-and-owner";
-import { FETCH_NFTS_BY_HOLDER } from "graphql/queries/fetch-nfts-by-holder";
 import {
   CollectionNft,
   MS_PER_DAY,
@@ -15,6 +13,7 @@ import {
   STAKING_WALLET_ADDRESS,
 } from "constants/constants";
 import { useEffect, useState } from "react";
+import { FETCH_FROZEN_NFTS } from "graphql/queries/fetch-frozen-nfts";
 
 const defaultData: CollectionNft[] = [];
 
@@ -92,16 +91,8 @@ const columns = [
 
 function StakedNftTable() {
   const [data, setData] = useState(() => [...defaultData]);
-  //  fetch by isFrozen
-  // const {
-  //   loading,
-  //   error,
-  //   data: fetchedData,
-  // } = useQuery(FETCH_NFTS_BY_HOLDER, {
-  //   variables: {
-  //     holderWalletAddress: STAKING_WALLET_ADDRESS,
-  //   },
-  // });
+
+  const { loading, error, data: fetchedData } = useQuery(FETCH_FROZEN_NFTS);
 
   const table = useReactTable({
     data,
