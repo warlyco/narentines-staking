@@ -107,7 +107,7 @@ const Home: NextPage = () => {
         walletAddress: publicKey?.toString(),
       });
     }
-  }, [nftMetasFromMetaplex, nftsFromDb?.nfts, publicKey]);
+  }, [nftMetasFromMetaplex, nftsFromDb?.nfts, publicKey, refetch]);
 
   useEffect(() => {
     console.log(nftsFromDb);
