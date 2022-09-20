@@ -48,17 +48,6 @@ const Home: NextPage = () => {
   const router = useRouter();
   const { view } = router.query;
 
-  // const [
-  //   fetchStakedNfts,
-  //   { loading: isLoadingStakedNfts, error, data: stakedNfts },
-  // ] = useLazyQuery(FETCH_NFTS_BY_HOLDER_AND_OWNER, {
-  //   variables: {
-  //     ownerWalletAddress: publicKey?.toString(),
-  //     holderWalletAddress: STAKING_WALLET_ADDRESS,
-  //   },
-  //   fetchPolicy: "no-cache",
-  // });
-
   const [
     fetchNftsFromDb,
     {
