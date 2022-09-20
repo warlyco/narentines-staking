@@ -14,6 +14,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import { SendTransactionOptions } from "@solana/wallet-adapter-base";
 import {
   Connection,
   LAMPORTS_PER_SOL,
@@ -33,6 +34,14 @@ import toast from "react-hot-toast";
 type Params = {
   publicKey: PublicKey;
   signTransaction: (transaction: Transaction) => Promise<Transaction>;
+  signAllTransactions:
+    | ((transaction: Transaction[]) => Promise<Transaction[]>)
+    | undefined;
+  sendTransaction: (
+    transaction: Transaction,
+    connection: Connection,
+    options?: SendTransactionOptions | undefined
+  ) => Promise<string>;
   nft: Metadata;
   connection: Connection;
   setIsLoading: (isLoading: boolean, message?: string) => void;
@@ -44,6 +53,8 @@ type Params = {
 const stakeNftsNonCustodial = async ({
   publicKey,
   signTransaction,
+  signAllTransactions,
+  sendTransaction,
   nft,
   connection,
   setIsLoading,
@@ -51,7 +62,7 @@ const stakeNftsNonCustodial = async ({
   professionId,
   removeFromDispayedNfts,
 }: Params) => {
-  if (!publicKey || !signTransaction) {
+  if (!publicKey || !signTransaction || !signAllTransactions) {
     console.log("error", "Wallet not connected!");
     return;
   }
@@ -72,8 +83,7 @@ const stakeNftsNonCustodial = async ({
 
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
-  const paymentTransaction = new Transaction();
-  paymentTransaction.add(
+  const paymentTransaction = new Transaction().add(
     SystemProgram.transfer({
       fromPubkey: publicKey,
       toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
@@ -81,39 +91,7 @@ const stakeNftsNonCustodial = async ({
     })
   );
 
-  const paymentLatestBlockHash = await connection.getLatestBlockhash();
-  paymentTransaction.recentBlockhash = paymentLatestBlockHash.blockhash;
-  paymentTransaction.feePayer = publicKey;
-
-  let paymentTxSigned;
-  try {
-    paymentTxSigned = await signTransaction(paymentTransaction);
-  } catch (error) {
-    setIsLoading(false);
-    return;
-  }
-
-  let paymentTxSignature;
-  try {
-    paymentTxSignature = await connection.sendRawTransaction(
-      paymentTxSigned.serialize()
-    );
-    await connection.confirmTransaction(
-      {
-        signature: paymentTxSignature,
-        lastValidBlockHeight: paymentLatestBlockHash.lastValidBlockHeight,
-        blockhash: paymentLatestBlockHash.blockhash,
-      },
-      "finalized"
-    );
-  } catch (error) {
-    console.error(error);
-    setIsLoading(false);
-    return;
-  }
-
-  const transaction = new Transaction();
-  transaction.add(
+  const deglegateTransaction = new Transaction().add(
     createApproveCheckedInstruction(
       tokenAccount.address, // token account
       new PublicKey(tokenMintAddress), // mint
@@ -122,19 +100,19 @@ const stakeNftsNonCustodial = async ({
       1, // amount, if your deciamls is 8, 10^8 for 1 token
       0 // decimals
     )
-    // SystemProgram.transfer({
-    //   fromPubkey: publicKey,
-    //   toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
-    //   lamports: solInLamports,
-    // })
   );
 
   const latestBlockHash = await connection.getLatestBlockhash();
-  transaction.recentBlockhash = latestBlockHash.blockhash;
-  transaction.feePayer = publicKey;
-  let signed;
+  paymentTransaction.recentBlockhash = latestBlockHash.blockhash;
+  paymentTransaction.feePayer = publicKey;
+  deglegateTransaction.recentBlockhash = latestBlockHash.blockhash;
+  deglegateTransaction.feePayer = publicKey;
+  let signedTransactions;
   try {
-    signed = await signTransaction(transaction);
+    signedTransactions = await signAllTransactions([
+      paymentTransaction,
+      deglegateTransaction,
+    ]);
   } catch (error) {
     setIsLoading(false);
     return;
@@ -142,22 +120,24 @@ const stakeNftsNonCustodial = async ({
 
   let signature;
   try {
-    signature = await connection.sendRawTransaction(signed.serialize());
-    await connection.confirmTransaction(
-      {
-        signature,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        blockhash: latestBlockHash.blockhash,
-      },
-      "finalized"
-    );
+    for (const tx of signedTransactions) {
+      signature = await sendTransaction(tx, connection);
+      await connection.confirmTransaction(
+        {
+          signature,
+          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+          blockhash: latestBlockHash.blockhash,
+        },
+        "finalized"
+      );
 
-    const { data } = await axios.post("/api/freeze-token-account", {
-      tokenMintAddress: tokenAccount.mint.toString(),
-      walletAddress: publicKey.toString(),
-    });
+      const { data } = await axios.post("/api/freeze-token-account", {
+        tokenMintAddress: tokenAccount.mint.toString(),
+        walletAddress: publicKey.toString(),
+      });
 
-    console.log({ data, signature });
+      console.log({ data, signature });
+    }
 
     toast.custom(
       <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">

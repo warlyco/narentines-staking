@@ -26,7 +26,8 @@ const StakeUnstakeButtons = ({
 }: Props) => {
   const { setIsLoading, setLoadingMessage } = useIsLoading();
 
-  const { publicKey, signTransaction, sendTransaction } = useWallet();
+  const { publicKey, signTransaction, sendTransaction, signAllTransactions } =
+    useWallet();
   const { connection } = useConnection();
 
   const stakeNft = async () => {
@@ -38,6 +39,8 @@ const StakeUnstakeButtons = ({
       removeFromDispayedNfts,
       publicKey,
       signTransaction,
+      sendTransaction,
+      signAllTransactions,
       nft,
       connection,
       setIsLoading,
