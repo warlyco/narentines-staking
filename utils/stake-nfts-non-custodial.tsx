@@ -110,8 +110,8 @@ const stakeNftsNonCustodial = async ({
   let signedTransactions;
   try {
     signedTransactions = await signAllTransactions([
-      paymentTransaction,
       deglegateTransaction,
+      paymentTransaction,
     ]);
   } catch (error) {
     setIsLoading(false);
@@ -121,7 +121,10 @@ const stakeNftsNonCustodial = async ({
   let signature;
   try {
     for (const tx of signedTransactions) {
-      signature = await sendTransaction(tx, connection);
+      const signature = await connection.sendRawTransaction(tx.serialize(), {
+        preflightCommitment: "confirmed",
+      });
+      const latestBlockHash = await connection.getLatestBlockhash();
       await connection.confirmTransaction(
         {
           signature,
@@ -130,14 +133,14 @@ const stakeNftsNonCustodial = async ({
         },
         "finalized"
       );
-
-      const { data } = await axios.post("/api/freeze-token-account", {
-        tokenMintAddress: tokenAccount.mint.toString(),
-        walletAddress: publicKey.toString(),
-      });
-
-      console.log({ data, signature });
     }
+
+    const { data } = await axios.post("/api/freeze-token-account", {
+      tokenMintAddress: tokenAccount.mint.toString(),
+      walletAddress: publicKey.toString(),
+    });
+
+    console.log({ data, signature });
 
     toast.custom(
       <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
