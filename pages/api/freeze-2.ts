@@ -2,11 +2,7 @@ import type { NextApiHandler } from "next";
 import request from "graphql-request";
 import { FETCH_NFT } from "graphql/queries/fetch-nft";
 import { UPDATE_NFTS_OWNER } from "graphql/mutations/update-nfts-owner";
-import {
-  NARENTINES_MINT_AUTHORITY,
-  RPC_ENDPOINT,
-  STAKING_WALLET_ADDRESS,
-} from "constants/constants";
+import { RPC_ENDPOINT, STAKING_WALLET_ADDRESS } from "constants/constants";
 import {
   Connection,
   Keypair,
@@ -23,10 +19,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import {
-  createFreezeDelegatedAccountInstruction,
-  createThawDelegatedAccountInstruction,
-} from "@metaplex-foundation/mpl-token-metadata";
+import { createFreezeDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
 
 const freezeTokenAccount: NextApiHandler = async (req, response) => {
   const { tokenMintAddress, walletAddress } = req.body;
@@ -57,20 +50,22 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
       ASSOCIATED_TOKEN_PROGRAM_ID
     );
   } catch (error) {
-    response.status(500).json({ error });
     console.error(error);
+    response.status(500).json({ error });
     return;
   }
 
-  let confirmation;
   try {
+    let confirmation;
     const transaction = new Transaction();
+    console.log(1);
 
+    const mintAuthority = "D9pDHvVRCaZ9CiNvqKUJLPwUqkvLUAygNiWyJwnmmVE1";
     transaction.add(
-      createThawDelegatedAccountInstruction({
+      createFreezeDelegatedAccountInstruction({
         delegate: new PublicKey(STAKING_WALLET_ADDRESS),
         tokenAccount: tokenAccount.address,
-        edition: new PublicKey(NARENTINES_MINT_AUTHORITY),
+        edition: new PublicKey(mintAuthority),
         mint: new PublicKey(tokenMintAddress),
         tokenProgram: TOKEN_PROGRAM_ID,
       })
@@ -85,7 +80,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
       transaction,
       [keypair],
       {
-        commitment: "confirmed",
+        commitment: "finalized",
         maxRetries: 10,
       }
     );
@@ -95,6 +90,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
       return;
     }
     response.json({ confirmation });
+    return;
   } catch (error) {
     response.status(500).json({ error });
     console.error(error);

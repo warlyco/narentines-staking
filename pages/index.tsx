@@ -33,6 +33,7 @@ const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
     WalletTypes.USER
   );
+  const [mergedNfts, setMergedNfts] = useState<any[] | null>(null);
   const [nftMetasFromMetaplex, setNftMetasFromMetaplex] = useState<
     Metadata[] | null
   >(null);
@@ -126,6 +127,8 @@ const Home: NextPage = () => {
         // @ts-ignore
         collection.map(async (metadata: Metadata) => {
           // const nft = await metaplex.nfts().load({ metadata }).run();
+          // console.log(nft.mint.mintAuthorityAddress?.toString());c
+          console.log(metadata);
           const tokenAccount = await getOrCreateAssociatedTokenAccount(
             connection,
             // @ts-ignore

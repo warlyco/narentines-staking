@@ -4,6 +4,12 @@ import { PublicKey } from "@solana/web3.js";
 export const CREATOR_ADDRESS: string =
   process.env.NEXT_PUBLIC_NARENTINE_CREATOR_ADDRESS || "";
 
+export const NARENTINES_MINT_AUTHORITY: string =
+  process.env.NEXT_PUBLIC_NARENTINES_MINT_AUTHORITY || "";
+
+export const STAKING_COST_IN_SOL: string =
+  process.env.NEXT_PUBLIC_STAKING_COST_IN_SOL || "";
+
 export const COLLECTION_SYMBOL: string =
   process.env.NEXT_PUBLIC_NARENTINE_COLLECTION_SYMBOL || "";
 

@@ -13,11 +13,7 @@ import {
 import * as bs58 from "bs58";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createApproveCheckedInstruction,
-  createFreezeAccountInstruction,
-  getAssociatedTokenAddress,
   getOrCreateAssociatedTokenAccount,
-  TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 
@@ -56,9 +52,21 @@ const getTokenAccount: NextApiHandler = async (req, response) => {
     return;
   }
 
-  console.log({ tokenAccount, delegate: tokenAccount.delegate?.toString() });
+  console.log({
+    owner: tokenAccount.owner.toString(),
+    address: tokenAccount.address.toString(),
+    mint: tokenAccount.mint.toString(),
+    delegate: tokenAccount.delegate?.toString(),
+    isFrozen: tokenAccount.isFrozen,
+  });
 
-  response.json({ done: true });
+  response.json({
+    owner: tokenAccount.owner.toString(),
+    address: tokenAccount.address.toString(),
+    mint: tokenAccount.mint.toString(),
+    delegate: tokenAccount.delegate?.toString(),
+    isFrozen: tokenAccount.isFrozen,
+  });
 };
 
 export default getTokenAccount;

@@ -13,13 +13,11 @@ import {
 import * as bs58 from "bs58";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  createApproveCheckedInstruction,
-  createFreezeAccountInstruction,
   getOrCreateAssociatedTokenAccount,
-  TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
 import { createFreezeDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
+import { Metaplex } from "@metaplex-foundation/js";
 
 const freezeTokenAccount: NextApiHandler = async (req, response) => {
   const { tokenMintAddress, walletAddress } = req.body;
@@ -37,7 +35,6 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
 
   let tokenAccount;
   try {
-    console.log("Fetching token account");
     tokenAccount = await getOrCreateAssociatedTokenAccount(
       connection,
       // @ts-ignore
@@ -59,14 +56,24 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
   try {
     let confirmation;
     const transaction = new Transaction();
-    console.log("Create freeze tx");
+    console.log(1);
 
-    const MINT_AUTHORITY = "H2yUke2i77yi1aEMisFas17fjShUahvnihWTTdjuvh71";
+    const metaplex = Metaplex.make(connection);
+    const nft = await metaplex
+      .nfts()
+      .findByMint({ mintAddress: new PublicKey(tokenMintAddress) })
+      .run();
+
+    const { mintAuthorityAddress } = nft.mint;
+    if (!mintAuthorityAddress) {
+      response.status(500).json({ error: "Could not find mint authority" });
+      return;
+    }
     transaction.add(
       createFreezeDelegatedAccountInstruction({
         delegate: new PublicKey(STAKING_WALLET_ADDRESS),
         tokenAccount: tokenAccount.address,
-        edition: new PublicKey(MINT_AUTHORITY),
+        edition: mintAuthorityAddress,
         mint: new PublicKey(tokenMintAddress),
         tokenProgram: TOKEN_PROGRAM_ID,
       })
@@ -76,7 +83,6 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
     transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = new PublicKey(STAKING_WALLET_ADDRESS);
 
-    console.log("Send and confirm freeze tx");
     confirmation = await sendAndConfirmTransaction(
       connection,
       transaction,

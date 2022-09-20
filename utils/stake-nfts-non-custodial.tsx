@@ -1,8 +1,9 @@
-import { Metadata } from "@metaplex-foundation/js";
+import { Metadata, Metaplex } from "@metaplex-foundation/js";
 import { createFreezeDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
 import {
   Account,
   ASSOCIATED_TOKEN_PROGRAM_ID,
+  createApproveCheckedInstruction,
   createAssociatedTokenAccountInstruction,
   createTransferInstruction,
   getAccount,
@@ -10,9 +11,16 @@ import {
   getOrCreateAssociatedTokenAccount,
   TokenAccountNotFoundError,
   TokenInvalidAccountOwnerError,
+  TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import {
+  Connection,
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import axios from "axios";
 import { STAKING_WALLET_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
@@ -48,145 +56,34 @@ const stakeNftsNonCustodial = async ({
   const tokenMintAddress = nft.mintAddress;
   const amount = 1;
 
-  let fromTokenAccount;
-  try {
-    fromTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      // @ts-ignore
-      publicKey,
-      new PublicKey(tokenMintAddress),
-      publicKey,
-      false,
-      "confirmed",
-      {},
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-  } catch (error) {
-    console.error(error);
-    setIsLoading(false);
-    return;
+  const { data: tokenAccount } = await axios.post("/api/get-token-account", {
+    tokenMintAddress,
+    walletAddress: publicKey.toString(),
+  });
+
+  if (!tokenAccount || !tokenAccount.address) {
+    throw new Error("tokenAccount is undefined");
   }
 
-  let toTokenAccount;
+  const amountOfSol = 0.0001;
+  const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
+
   const transaction = new Transaction();
-
-  try {
-    // get token account if it exists
-    toTokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      // @ts-ignore
-      publicKey,
-      new PublicKey(tokenMintAddress),
-      new PublicKey(STAKING_WALLET_ADDRESS),
-      false,
-      "confirmed",
-      {},
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-  } catch (error) {
-    // if it doesn't exist (check error), create it
-
-    // get address of ATA
-    const associatedToken = await getAssociatedTokenAddress(
-      new PublicKey(tokenMintAddress),
-      new PublicKey(STAKING_WALLET_ADDRESS),
-      true,
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-
-    let account: Account;
-    try {
-      // use the address to get the account
-      account = await getAccount(
-        connection,
-        associatedToken,
-        "confirmed",
-        ASSOCIATED_TOKEN_PROGRAM_ID
-      );
-    } catch (error: unknown) {
-      if (
-        error instanceof TokenAccountNotFoundError ||
-        error instanceof TokenInvalidAccountOwnerError
-      ) {
-        try {
-          // if the account doesn't exist, create it
-          transaction.add(
-            createAssociatedTokenAccountInstruction(
-              publicKey,
-              associatedToken,
-              new PublicKey(STAKING_WALLET_ADDRESS),
-              new PublicKey(tokenMintAddress),
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            )
-          );
-          const latestBlockHash = await connection.getLatestBlockhash();
-          transaction.recentBlockhash = latestBlockHash.blockhash;
-          transaction.feePayer = publicKey;
-          let signed;
-          try {
-            signed = await signTransaction(transaction);
-          } catch (error) {
-            setIsLoading(false);
-            return;
-          }
-          let signature;
-          try {
-            signature = await connection.sendRawTransaction(signed.serialize());
-            await connection.confirmTransaction({
-              signature,
-              lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-              blockhash: latestBlockHash.blockhash,
-            });
-            toTokenAccount = await getOrCreateAssociatedTokenAccount(
-              connection,
-              // @ts-ignore
-              publicKey,
-              new PublicKey(tokenMintAddress),
-              new PublicKey(STAKING_WALLET_ADDRESS),
-              false,
-              "confirmed",
-              {},
-              TOKEN_PROGRAM_ID,
-              ASSOCIATED_TOKEN_PROGRAM_ID
-            );
-          } catch (error) {
-            console.log("sendRawTransaction error", error);
-            setIsLoading(false);
-            // handleRollbackPurchase(id, "Your purchase could not be completed.");
-            return;
-          }
-        } catch (error: unknown) {
-          setIsLoading(false);
-          throw error;
-        }
-      } else {
-        setIsLoading(false);
-        throw error;
-      }
-    }
-  }
-
-  if (!toTokenAccount) {
-    throw new Error("toTokenAccount is undefined");
-  }
-
-  // const MINT_AUTHORITY = "H2yUke2i77yi1aEMisFas17fjShUahvnihWTTdjuvh71";
-  // transaction.add(
-  //   createFreezeDelegatedAccountInstruction(
-  //     {
-  //       delegate: new PublicKey(STAKING_WALLET_ADDRESS),
-  //       tokenAccount: toTokenAccount.address,
-  //       edition: new PublicKey(MINT_AUTHORITY),
-  //       mint: new PublicKey(tokenMintAddress),
-  //       tokenProgram: TOKEN_PROGRAM_ID,
-  //     },
-  //     TOKEN_PROGRAM_ID
-  //   )
-  // );
+  transaction.add(
+    createApproveCheckedInstruction(
+      tokenAccount.address, // token account
+      new PublicKey(tokenMintAddress), // mint
+      new PublicKey(STAKING_WALLET_ADDRESS), // delegate
+      publicKey, // owner of token account
+      1, // amount, if your deciamls is 8, 10^8 for 1 token
+      0 // decimals
+    )
+    // SystemProgram.transfer({
+    //   fromPubkey: publicKey,
+    //   toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+    //   lamports: solInLamports,
+    // })
+  );
 
   const latestBlockHash = await connection.getLatestBlockhash();
   transaction.recentBlockhash = latestBlockHash.blockhash;
@@ -211,9 +108,12 @@ const stakeNftsNonCustodial = async ({
       "finalized"
     );
 
-    await axios.post("/api/reset-nft-claim-time", {
-      mintAddress: tokenMintAddress,
+    const { data } = await axios.post("/api/freeze-token-account", {
+      tokenMintAddress: tokenAccount.mint.toString(),
+      walletAddress: publicKey.toString(),
     });
+
+    console.log({ data, signature });
 
     toast.custom(
       <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
