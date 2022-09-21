@@ -83,13 +83,13 @@ const stakeNftsNonCustodial = async ({
 
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
-  const paymentTransaction = new Transaction().add(
-    SystemProgram.transfer({
-      fromPubkey: publicKey,
-      toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
-      lamports: solInLamports,
-    })
-  );
+  // const paymentTransaction = new Transaction().add(
+  //   SystemProgram.transfer({
+  //     fromPubkey: publicKey,
+  //     toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+  //     lamports: solInLamports,
+  //   })
+  // );
 
   const deglegateTransaction = new Transaction().add(
     createApproveCheckedInstruction(
@@ -107,12 +107,9 @@ const stakeNftsNonCustodial = async ({
   // paymentTransaction.feePayer = publicKey;
   deglegateTransaction.recentBlockhash = latestBlockHash.blockhash;
   deglegateTransaction.feePayer = publicKey;
-  let signedTransactions;
+  let signedTransaction;
   try {
-    signedTransactions = await signAllTransactions([
-      deglegateTransaction,
-      // paymentTransaction,
-    ]);
+    signedTransaction = await signTransaction(deglegateTransaction);
   } catch (error) {
     setIsLoading(false);
     return;
@@ -120,20 +117,36 @@ const stakeNftsNonCustodial = async ({
 
   let signature;
   try {
-    for (const tx of signedTransactions) {
-      const signature = await connection.sendRawTransaction(tx.serialize(), {
+    // for (const tx of signedTransactions) {
+    //   const signature = await connection.sendRawTransaction(tx.serialize(), {
+    //     preflightCommitment: "confirmed",
+    //   });
+    //   const latestBlockHash = await connection.getLatestBlockhash();
+    //   await connection.confirmTransaction(
+    //     {
+    //       signature,
+    //       lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+    //       blockhash: latestBlockHash.blockhash,
+    //     },
+    //     "finalized"
+    //   );
+    // }
+
+    const signature = await connection.sendRawTransaction(
+      signedTransaction.serialize(),
+      {
         preflightCommitment: "confirmed",
-      });
-      const latestBlockHash = await connection.getLatestBlockhash();
-      await connection.confirmTransaction(
-        {
-          signature,
-          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-          blockhash: latestBlockHash.blockhash,
-        },
-        "finalized"
-      );
-    }
+      }
+    );
+    const latestBlockHash = await connection.getLatestBlockhash();
+    await connection.confirmTransaction(
+      {
+        signature,
+        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+        blockhash: latestBlockHash.blockhash,
+      },
+      "finalized"
+    );
 
     const { data } = await axios.post("/api/freeze-token-account", {
       tokenMintAddress: tokenAccount.mint.toString(),
