@@ -9,11 +9,12 @@ import { WalletTypes } from "types";
 import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
 type Props = {
+  hasUnclaimedRewards: boolean;
   activeWallet: WalletTypes;
   nft: Metadata;
   professionId: ProfessionIds;
   fetchNfts: () => Promise<void>;
-  claimReward: () => Promise<void>;
+  claimReward: () => Promise<boolean | undefined>;
   removeFromDispayedNfts: (nft: any) => void;
 };
 
@@ -23,6 +24,8 @@ const StakeUnstakeButtons = ({
   fetchNfts,
   professionId,
   removeFromDispayedNfts,
+  hasUnclaimedRewards,
+  claimReward,
 }: Props) => {
   const { setIsLoading, setLoadingMessage } = useIsLoading();
 
@@ -57,6 +60,23 @@ const StakeUnstakeButtons = ({
     if (!STAKING_WALLET_ADDRESS) {
       throw new Error("STAKING_WALLET_ADDRESS is not defined");
     }
+
+    let claimWasSuccessful;
+    if (hasUnclaimedRewards) {
+      claimWasSuccessful = await claimReward();
+    }
+
+    if (!claimWasSuccessful) {
+      toast.custom(
+        <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+          <div className="font-bold text-3xl">
+            Could not claim reward, try again.
+          </div>
+        </div>
+      );
+      throw new Error("Claiming rewards failed");
+    }
+
     setIsLoading(true, "Unstaking...");
     const tokenMintAddress = nft.mintAddress;
 
