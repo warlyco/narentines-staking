@@ -248,7 +248,7 @@ const NftListItem = ({
           >
             <StakeUnstakeButtons
               hasUnclaimedRewards={
-                Number(primaryRewardAmount.toString(2)) !== 0
+                Number(primaryRewardAmount.toString(2)) > 0.1
               }
               claimReward={claimPrimaryReward}
               removeFromDispayedNfts={removeFromDispayedNfts}

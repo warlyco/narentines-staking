@@ -81,35 +81,37 @@ const stakeNftsNonCustodial = async ({
     throw new Error("tokenAccount is undefined");
   }
 
+  console.log({
+    publicKey,
+    toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+    tokenAccountAddress: tokenAccount.address,
+    tokenMintAddress: new PublicKey(tokenMintAddress),
+  });
+
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
-  // const paymentTransaction = new Transaction().add(
-  //   SystemProgram.transfer({
-  //     fromPubkey: publicKey,
-  //     toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
-  //     lamports: solInLamports,
-  //   })
-  // );
-
-  const deglegateTransaction = new Transaction().add(
+  const transaction = new Transaction().add(
+    SystemProgram.transfer({
+      fromPubkey: publicKey,
+      toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+      lamports: solInLamports,
+    }),
     createApproveCheckedInstruction(
-      tokenAccount.address, // token account
-      new PublicKey(tokenMintAddress), // mint
-      new PublicKey(STAKING_WALLET_ADDRESS), // delegate
-      publicKey, // owner of token account
-      1, // amount, if your deciamls is 8, 10^8 for 1 token
-      0 // decimals
+      new PublicKey(tokenAccount.address),
+      new PublicKey(tokenMintAddress),
+      new PublicKey(STAKING_WALLET_ADDRESS),
+      publicKey,
+      1,
+      0
     )
   );
 
   const latestBlockHash = await connection.getLatestBlockhash();
-  // paymentTransaction.recentBlockhash = latestBlockHash.blockhash;
-  // paymentTransaction.feePayer = publicKey;
-  deglegateTransaction.recentBlockhash = latestBlockHash.blockhash;
-  deglegateTransaction.feePayer = publicKey;
+  transaction.recentBlockhash = latestBlockHash.blockhash;
+  transaction.feePayer = publicKey;
   let signedTransaction;
   try {
-    signedTransaction = await signTransaction(deglegateTransaction);
+    signedTransaction = await signTransaction(transaction);
   } catch (error) {
     setIsLoading(false);
     return;
@@ -117,21 +119,6 @@ const stakeNftsNonCustodial = async ({
 
   let signature;
   try {
-    // for (const tx of signedTransactions) {
-    //   const signature = await connection.sendRawTransaction(tx.serialize(), {
-    //     preflightCommitment: "confirmed",
-    //   });
-    //   const latestBlockHash = await connection.getLatestBlockhash();
-    //   await connection.confirmTransaction(
-    //     {
-    //       signature,
-    //       lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-    //       blockhash: latestBlockHash.blockhash,
-    //     },
-    //     "finalized"
-    //   );
-    // }
-
     const signature = await connection.sendRawTransaction(
       signedTransaction.serialize(),
       {
