@@ -6,7 +6,6 @@ import { ProfessionIds, STAKING_WALLET_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
 import toast from "react-hot-toast";
 import { WalletTypes } from "types";
-import stakeNftsCustodial from "utils/stake-nfts-custodial";
 import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
 type Props = {
@@ -14,6 +13,7 @@ type Props = {
   nft: Metadata;
   professionId: ProfessionIds;
   fetchNfts: () => Promise<void>;
+  claimReward: () => Promise<void>;
   removeFromDispayedNfts: (nft: any) => void;
 };
 

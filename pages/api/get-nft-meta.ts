@@ -1,7 +1,4 @@
 import type { NextApiHandler } from "next";
-import request from "graphql-request";
-import { FETCH_NFT } from "graphql/queries/fetch-nft";
-import { UPDATE_NFTS_OWNER } from "graphql/mutations/update-nfts-owner";
 import { RPC_ENDPOINT, STAKING_WALLET_ADDRESS } from "constants/constants";
 import {
   Connection,
