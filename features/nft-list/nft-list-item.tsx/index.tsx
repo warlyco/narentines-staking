@@ -137,8 +137,7 @@ const NftListItem = ({
             )}
           </div>
         );
-        reject(false);
-        return false;
+        return reject(false);
       }
 
       toast.custom(
@@ -157,9 +156,8 @@ const NftListItem = ({
           </a>
         </div>
       );
-      fetchNfts();
-      resolve(true);
-      return true;
+      calculatePrimaryReward();
+      return resolve(true);
     });
   };
 
