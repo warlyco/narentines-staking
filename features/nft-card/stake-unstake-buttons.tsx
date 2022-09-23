@@ -66,7 +66,7 @@ const StakeUnstakeButtons = ({
       claimWasSuccessful = await claimReward();
     }
 
-    if (!claimWasSuccessful) {
+    if (hasUnclaimedRewards && !claimWasSuccessful) {
       toast.custom(
         <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
           <div className="font-bold text-3xl">

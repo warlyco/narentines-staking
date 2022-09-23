@@ -202,7 +202,7 @@ const Home: NextPage = () => {
     <div className="h-full w-full flex">
       <div className="max-w-5xl p-4 text-2xl w-full">
         <ClientOnly>
-          <div className="flex pb-4 justify-between items-center">
+          <div className="flex pb-4 justify-between items-center flex-wrap">
             <div className="space-x-2">
               <Link
                 href={{
@@ -241,8 +241,8 @@ const Home: NextPage = () => {
                 </a>
               </Link>
             </div>
-            <div className="flex items-center space-x-2 -mt-[1px]">
-              <StakeAllButton />
+            <div className="items-center space-x-2 -mt-[1px] hidden md:flex">
+              {/* <StakeAllButton /> */}
               <WalletMultiButton />
             </div>
           </div>

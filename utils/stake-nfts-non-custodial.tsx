@@ -1,19 +1,6 @@
 import { Metadata, Metaplex } from "@metaplex-foundation/js";
 import { createFreezeDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
-import {
-  Account,
-  ASSOCIATED_TOKEN_PROGRAM_ID,
-  createApproveCheckedInstruction,
-  createAssociatedTokenAccountInstruction,
-  createTransferInstruction,
-  getAccount,
-  getAssociatedTokenAddress,
-  getOrCreateAssociatedTokenAccount,
-  TokenAccountNotFoundError,
-  TokenInvalidAccountOwnerError,
-  TOKEN_2022_PROGRAM_ID,
-  TOKEN_PROGRAM_ID,
-} from "@solana/spl-token";
+import { createApproveCheckedInstruction } from "@solana/spl-token";
 import { SendTransactionOptions } from "@solana/wallet-adapter-base";
 import {
   Connection,

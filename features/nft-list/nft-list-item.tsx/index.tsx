@@ -156,7 +156,7 @@ const NftListItem = ({
           </a>
         </div>
       );
-      calculatePrimaryReward();
+      setPrimaryRewardAmount(0);
       return resolve(true);
     });
   };
