@@ -1,18 +1,18 @@
 import type { NextApiHandler } from "next";
 import request from "graphql-request";
-import { UPDATE_NFT_CLAIM_TIME } from "graphql/mutations/update-nft-claim-time";
+import { UPDATE_NFTS_CLAIM_TIME } from "graphql/mutations/update-nfts-claim-time";
 
-const resetNftClaimTime: NextApiHandler = async (req, response) => {
-  const { mintAddress } = req.body;
+const resetNftsClaimTime: NextApiHandler = async (req, response) => {
+  const { mintAddresses } = req.body;
 
-  if (!mintAddress) throw new Error("Missing required fields");
+  if (!mintAddresses) throw new Error("Missing required fields");
 
   try {
     const { update_nfts_by_pk } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: UPDATE_NFT_CLAIM_TIME,
+      document: UPDATE_NFTS_CLAIM_TIME,
       variables: {
-        mintAddress,
+        mintAddresses,
         lastClaimTimestamp: new Date().toISOString(),
       },
       requestHeaders: {
@@ -28,4 +28,4 @@ const resetNftClaimTime: NextApiHandler = async (req, response) => {
   }
 };
 
-export default resetNftClaimTime;
+export default resetNftsClaimTime;

@@ -52,8 +52,8 @@ const stakeNftsNonCustodial = async ({
   setIsLoading(true, "Staking...");
 
   const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
-  const transaction = new Transaction();
 
+  const transaction = new Transaction();
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
 
@@ -135,9 +135,12 @@ const stakeNftsNonCustodial = async ({
     try {
       const splitTokenMintAddresses = chunk(tokenMintAddresses, 9);
       for (const tokenMintAddresses of splitTokenMintAddresses) {
-        const { data } = await axios.post("/api/freeze-token-accounts", {
+        const freezeRes = await axios.post("/api/freeze-token-accounts", {
           tokenMintAddresses,
           walletAddress: publicKey.toString(),
+        });
+        const resetRes = await axios.post("/api/reset-nfts-claim-time", {
+          tokenMintAddresses,
         });
       }
       toast.custom(

@@ -20,12 +20,9 @@ import {
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { UPDATE_NFT_CLAIM_TIME } from "graphql/mutations/update-nft-claim-time";
-import { FETCH_NFT } from "graphql/queries/fetch-nft";
 import dayjs from "dayjs";
 import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
 import { UPDATE_NFTS_CLAIM_TIME } from "graphql/mutations/update-nfts-claim-time";
-import { useLazyQuery } from "@apollo/client";
 
 const initRewardClaim: NextApiHandler = async (req, response) => {
   const { mintAddresses, rewardTokenAddress, walletAddress } = req.body;
