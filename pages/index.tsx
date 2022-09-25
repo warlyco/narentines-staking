@@ -28,6 +28,8 @@ import {
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
+import UnstakeAllButton from "features/unstake-all-button";
+import ClaimAllButton from "features/claim-all-button";
 
 const Home: NextPage = () => {
   const [activeWallet, setActiveWallet] = useState<WalletTypes>(
@@ -200,11 +202,11 @@ const Home: NextPage = () => {
   }
 
   return (
-    <div className="h-full w-full flex">
+    <div className="h-full w-full flex -mt-8">
       <div className="max-w-5xl p-4 text-2xl w-full">
         <ClientOnly>
           <div className="flex pb-4 justify-between items-center flex-wrap">
-            <div className="space-x-2">
+            <div className="space-x-2 py-4">
               <Link
                 href={{
                   pathname: "/",
@@ -242,7 +244,7 @@ const Home: NextPage = () => {
                 </a>
               </Link>
             </div>
-            <div className="items-center space-x-2 -mt-[1px] flex">
+            <div className="items-center space-x-2 -mt-[1px] flex py-4">
               {activeWallet === WalletTypes.USER && (
                 <StakeAllButton
                   nfts={
@@ -252,6 +254,25 @@ const Home: NextPage = () => {
                   }
                   removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
                 />
+              )}
+              {activeWallet === WalletTypes.STAKING && (
+                <>
+                  <UnstakeAllButton
+                    nfts={
+                      shouldDisplayNfts
+                        ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                        : []
+                    }
+                    removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
+                  />
+                  <ClaimAllButton
+                    nfts={
+                      shouldDisplayNfts
+                        ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                        : []
+                    }
+                  />
+                </>
               )}
               <div className="hidden md:flex">
                 <WalletMultiButton />
