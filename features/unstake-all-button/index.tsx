@@ -3,6 +3,7 @@ import axios from "axios";
 import { STAKING_WALLET_ADDRESS } from "constants/constants";
 import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
+import { chunk } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import calculatePrimaryReward from "utils/calculate-primary-reward";
@@ -66,10 +67,14 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
 
     setIsLoading(true, `Unstaking NFTs`);
     try {
-      const { data, status } = await axios.post("/api/thaw-token-accounts", {
-        tokenMintAddresses: nfts.map((nft) => nft.mintAddress),
-        walletAddress: publicKey.toString(),
-      });
+      const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
+      const splitTokenMintAddresses = chunk(tokenMintAddresses, 10);
+      for (const tokenMintAddresses of splitTokenMintAddresses) {
+        const { data } = await axios.post("/api/thaw-token-accounts", {
+          tokenMintAddresses,
+          walletAddress: publicKey.toString(),
+        });
+      }
       showToast({
         primaryMessage: "Unstaked",
       });

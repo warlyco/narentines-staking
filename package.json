@@ -34,6 +34,7 @@
     "dayjs": "^1.11.5",
     "graphql": "^16.6.0",
     "graphql-request": "^4.3.0",
+    "lodash.chunk": "^4.2.0",
     "next": "12.2.2",
     "next-redux-wrapper": "^7.0.5",
     "notistack": "^2.0.5",

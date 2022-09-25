@@ -20,6 +20,7 @@ import {
 } from "constants/constants";
 import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
+import { chunk } from "lodash";
 import toast from "react-hot-toast";
 
 type Params = {
@@ -132,10 +133,13 @@ const stakeNftsNonCustodial = async ({
     );
 
     try {
-      const { data } = await axios.post("/api/freeze-token-accounts", {
-        tokenMintAddresses,
-        walletAddress: publicKey.toString(),
-      });
+      const splitTokenMintAddresses = chunk(tokenMintAddresses, 9);
+      for (const tokenMintAddresses of splitTokenMintAddresses) {
+        const { data } = await axios.post("/api/freeze-token-accounts", {
+          tokenMintAddresses,
+          walletAddress: publicKey.toString(),
+        });
+      }
       toast.custom(
         <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
           <div className="font-bold text-3xl">Staked!</div>
