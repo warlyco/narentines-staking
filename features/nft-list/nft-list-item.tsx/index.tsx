@@ -22,7 +22,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 type Props = {
-  removeFromDispayedNfts: (nft: Nft) => void;
+  removeFromDispayedNfts: (nft: Nft[]) => void;
   activeWallet: WalletTypes;
   nft: any;
   fetchNfts: () => Promise<void>;

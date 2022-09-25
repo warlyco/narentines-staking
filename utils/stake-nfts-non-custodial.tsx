@@ -1,12 +1,15 @@
 import { Metadata, Metaplex } from "@metaplex-foundation/js";
-import { createFreezeDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
-import { createApproveCheckedInstruction } from "@solana/spl-token";
+import {
+  ASSOCIATED_TOKEN_PROGRAM_ID,
+  createApproveCheckedInstruction,
+  getOrCreateAssociatedTokenAccount,
+  TOKEN_PROGRAM_ID,
+} from "@solana/spl-token";
 import { SendTransactionOptions } from "@solana/wallet-adapter-base";
 import {
   Connection,
   LAMPORTS_PER_SOL,
   PublicKey,
-  SolanaJSONRPCError,
   SystemProgram,
   Transaction,
 } from "@solana/web3.js";
@@ -29,12 +32,12 @@ type Params = {
     connection: Connection,
     options?: SendTransactionOptions | undefined
   ) => Promise<string>;
-  nft: Metadata;
+  nfts: Metadata[];
   connection: Connection;
   setIsLoading: (isLoading: boolean, message?: string) => void;
   fetchNfts: () => Promise<void>;
   professionId: string;
-  removeFromDispayedNfts: (nft: any) => void;
+  removeFromDispayedNfts: (nft: any[]) => void;
 };
 
 const stakeNftsNonCustodial = async ({
@@ -42,7 +45,7 @@ const stakeNftsNonCustodial = async ({
   signTransaction,
   signAllTransactions,
   sendTransaction,
-  nft,
+  nfts,
   connection,
   setIsLoading,
   fetchNfts,
@@ -57,41 +60,58 @@ const stakeNftsNonCustodial = async ({
     throw new Error("STAKING_WALLET_ADDRESS is not defined");
   }
   setIsLoading(true, "Staking...");
-  const tokenMintAddress = nft.mintAddress;
 
-  const { data: tokenAccount } = await axios.post("/api/get-token-account", {
-    tokenMintAddress,
-    walletAddress: publicKey.toString(),
-  });
-
-  if (!tokenAccount || !tokenAccount.address) {
-    throw new Error("tokenAccount is undefined");
-  }
-
-  console.log({
-    publicKey,
-    toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
-    tokenAccountAddress: tokenAccount.address,
-    tokenMintAddress: new PublicKey(tokenMintAddress),
-  });
+  const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
+  const transaction = new Transaction();
 
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
-  const transaction = new Transaction().add(
+
+  transaction.add(
     SystemProgram.transfer({
       fromPubkey: publicKey,
       toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
       lamports: solInLamports,
-    }),
-    createApproveCheckedInstruction(
-      new PublicKey(tokenAccount.address),
-      new PublicKey(tokenMintAddress),
-      new PublicKey(STAKING_WALLET_ADDRESS),
-      publicKey,
-      1,
-      0
-    )
+    })
   );
+
+  let tokenAccountMintAddresses: string[] = [];
+  for (const tokenMintAddress of tokenMintAddresses) {
+    let tokenAccount;
+    try {
+      tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        // @ts-ignore
+        publicKey,
+        new PublicKey(tokenMintAddress),
+        publicKey,
+        false,
+        "confirmed",
+        {},
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+      tokenAccountMintAddresses.push(tokenAccount.mint.toString());
+    } catch (error) {
+      console.error(error);
+      return;
+    }
+
+    if (!tokenAccount || !tokenAccount.address) {
+      throw new Error("tokenAccount is undefined");
+    }
+
+    transaction.add(
+      createApproveCheckedInstruction(
+        new PublicKey(tokenAccount.address),
+        new PublicKey(tokenMintAddress),
+        new PublicKey(STAKING_WALLET_ADDRESS),
+        publicKey,
+        1,
+        0
+      )
+    );
+  }
 
   const latestBlockHash = await connection.getLatestBlockhash();
   transaction.recentBlockhash = latestBlockHash.blockhash;
@@ -122,8 +142,8 @@ const stakeNftsNonCustodial = async ({
       "finalized"
     );
 
-    const { data } = await axios.post("/api/freeze-token-account", {
-      tokenMintAddress: tokenAccount.mint.toString(),
+    const { data } = await axios.post("/api/freeze-token-accounts", {
+      tokenMintAddresses,
       walletAddress: publicKey.toString(),
     });
 
@@ -143,7 +163,7 @@ const stakeNftsNonCustodial = async ({
       </div>
     );
 
-    removeFromDispayedNfts(tokenMintAddress);
+    removeFromDispayedNfts(tokenMintAddresses);
   } catch (error: any) {
     console.log("could not confirm", error);
     if (error.message.includes("Node is behind by")) {

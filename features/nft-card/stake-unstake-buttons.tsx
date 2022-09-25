@@ -15,7 +15,7 @@ type Props = {
   professionId: ProfessionIds;
   fetchNfts: () => Promise<void>;
   claimReward: () => Promise<boolean | undefined>;
-  removeFromDispayedNfts: (nft: any) => void;
+  removeFromDispayedNfts: (nft: any[]) => void;
 };
 
 const StakeUnstakeButtons = ({
@@ -44,7 +44,7 @@ const StakeUnstakeButtons = ({
       signTransaction,
       sendTransaction,
       signAllTransactions,
-      nft,
+      nfts: [nft],
       connection,
       setIsLoading,
       fetchNfts,
@@ -96,7 +96,7 @@ const StakeUnstakeButtons = ({
         </div>
       );
 
-      removeFromDispayedNfts(tokenMintAddress);
+      removeFromDispayedNfts([tokenMintAddress]);
     } catch (error) {
       console.error(error);
     } finally {

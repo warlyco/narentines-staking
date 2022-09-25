@@ -242,7 +242,7 @@ const Home: NextPage = () => {
               </Link>
             </div>
             <div className="items-center space-x-2 -mt-[1px] hidden md:flex">
-              {/* <StakeAllButton /> */}
+              <StakeAllButton />
               <WalletMultiButton />
             </div>
           </div>

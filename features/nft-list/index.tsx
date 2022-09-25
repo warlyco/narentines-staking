@@ -14,9 +14,9 @@ type Props = {
 const NftList = ({ nfts, isLoadingNfts, activeWallet, fetchNfts }: Props) => {
   const [displayedNfts, setDisplayedNfts] = useState(nfts);
 
-  const handleRemoveFromDispayedNfts = (mintAddress: any) => {
+  const handleRemoveFromDispayedNfts = (mintAddresses: any[]) => {
     const newDisplayedNfts = displayedNfts?.filter(
-      (displayedNft) => displayedNft.mintAddress !== mintAddress
+      (displayedNft) => !mintAddresses.includes(displayedNft.mintAddress)
     );
     if (!newDisplayedNfts?.length) return;
     setDisplayedNfts(newDisplayedNfts);
