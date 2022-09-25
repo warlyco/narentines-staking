@@ -4,14 +4,13 @@ import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
 type Props = {
   nfts: any[];
-  clearDisplayedNfts: (nft: any[]) => void;
+  removeFromDispayedNfts: (nft: any[]) => void;
 };
 
-const StakeAllButton = ({ nfts, clearDisplayedNfts }: Props) => {
+const StakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
   const { isLoading, setIsLoading } = useIsLoading();
   const { connection } = useConnection();
-  const { publicKey, signTransaction, signAllTransactions, sendTransaction } =
-    useWallet();
+  const { publicKey, signTransaction } = useWallet();
 
   const stakeAllNfts = () => {
     if (!publicKey || !signTransaction) return;
@@ -22,7 +21,7 @@ const StakeAllButton = ({ nfts, clearDisplayedNfts }: Props) => {
       signTransaction,
       connection,
       setIsLoading,
-      removeFromDispayedNfts: clearDisplayedNfts,
+      removeFromDispayedNfts,
     });
   };
   return (

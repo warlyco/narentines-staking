@@ -19,9 +19,7 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
 
   return (
     <ClientOnly>
-      <ScrollLock isActive={isOpenSidebar}>
-        <Overlay onClick={handleCloseSidebar} isVisible={isOpenSidebar} />
-      </ScrollLock>
+      <Overlay onClick={handleCloseSidebar} isVisible={isOpenSidebar} />
       <div
         className={classNames({
           "fixed top-0 right-0 bottom-0 w-full sm:w-[380px] h-screen transition-position duration-500 ease-in-out py-4":

@@ -20,6 +20,7 @@ import { useIsLoading } from "hooks/is-loading";
 import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import toast from "react-hot-toast";
+import claimPrimaryReward from "utils/claim-primary-reward";
 
 type Props = {
   removeFromDispayedNfts: (nft: Nft[]) => void;
@@ -50,6 +51,20 @@ const NftListItem = ({
   const { loading, error, data: professionsData } = useQuery(FETCH_PROFESSIONS);
   const { setIsLoading } = useIsLoading();
   const { publicKey } = useWallet();
+
+  const handleClaimPrimaryReward = () => {
+    if (!publicKey) {
+      throw new Error("Wallet not connected!");
+    }
+
+    return claimPrimaryReward({
+      primaryRewardAmount,
+      setIsLoading,
+      nft,
+      publicKey,
+      setPrimaryRewardAmount,
+    });
+  };
 
   const getStakingTime = useCallback(() => {
     const { timestamp, lastClaimTimestamp } = nft;
@@ -103,63 +118,6 @@ const NftListItem = ({
     );
     setSecondaryRewardLabel(profession?.resource?.name);
   }, [professionsData, nft]);
-
-  const claimPrimaryReward: () => Promise<boolean | undefined> = async () => {
-    if (primaryRewardAmount === 0) return;
-    return new Promise(async (resolve, reject) => {
-      setIsLoading(true, `Claiming ${primaryRewardAmount.toFixed(2)} $GOODS`);
-      console.log({ nft });
-      const { data, status } = await axios.post("/api/init-reward-claim", {
-        mintAddress: nft.mintAddress,
-        rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
-        walletAddress: publicKey?.toString(),
-      });
-      setIsLoading(false);
-
-      const { confirmation } = data;
-
-      if (status !== 200) {
-        toast.custom(
-          <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
-            <div className="font-bold text-3xl mb-2">
-              There might have been a problem.
-            </div>
-            {confirmation && (
-              <>
-                <div>Chack the transaction on solscan:</div>
-                <a
-                  href={`//solscan.io/tx/${confirmation}`}
-                  className="underline text-green-800"
-                >
-                  {confirmation.slice(0, 4)}...{confirmation.slice(-4)}
-                </a>
-              </>
-            )}
-          </div>
-        );
-        return reject(false);
-      }
-
-      toast.custom(
-        <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
-          <div className="font-bold text-3xl mb-2">
-            Claimed {primaryRewardAmount.toFixed(2)} $GOODS
-          </div>
-          <div>View tx:</div>
-          <a
-            href={`//solscan.io/tx/${confirmation}`}
-            target="_blank"
-            rel="noreferrer"
-            className="underline text-green-800"
-          >
-            {confirmation.slice(0, 4)}...{confirmation.slice(-4)}
-          </a>
-        </div>
-      );
-      setPrimaryRewardAmount(0);
-      return resolve(true);
-    });
-  };
 
   useEffect(() => {
     if (!nft) return;
@@ -250,7 +208,7 @@ const NftListItem = ({
               hasUnclaimedRewards={
                 Number(primaryRewardAmount.toString(2)) > 0.1
               }
-              claimReward={claimPrimaryReward}
+              claimReward={handleClaimPrimaryReward}
               removeFromDispayedNfts={removeFromDispayedNfts}
               nft={nft}
               activeWallet={activeWallet}
@@ -269,7 +227,7 @@ const NftListItem = ({
                   "border-slate-500 bg-slate-500 text-amber-200 cursor-not-allowed":
                     primaryRewardAmount === 0,
                 })}
-                onClick={claimPrimaryReward}
+                onClick={handleClaimPrimaryReward}
                 disabled={primaryRewardAmount === 0}
               >
                 Claim

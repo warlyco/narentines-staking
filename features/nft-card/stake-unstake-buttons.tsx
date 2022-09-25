@@ -42,12 +42,9 @@ const StakeUnstakeButtons = ({
       removeFromDispayedNfts,
       publicKey,
       signTransaction,
-      sendTransaction,
-      signAllTransactions,
       nfts: [nft],
       connection,
       setIsLoading,
-      fetchNfts,
       professionId,
     });
   };
@@ -79,8 +76,6 @@ const StakeUnstakeButtons = ({
 
     setIsLoading(true, "Unstaking...");
     const tokenMintAddress = nft.mintAddress;
-
-    // TODO: claim rewards
 
     try {
       const { data, status } = await axios.post("/api/thaw-token-account", {

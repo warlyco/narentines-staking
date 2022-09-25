@@ -1,7 +1,4 @@
 import type { NextApiHandler } from "next";
-import request from "graphql-request";
-import { FETCH_NFT } from "graphql/queries/fetch-nft";
-import { UPDATE_NFTS_OWNER } from "graphql/mutations/update-nfts-owner";
 import { RPC_ENDPOINT, STAKING_WALLET_ADDRESS } from "constants/constants";
 import {
   Connection,
@@ -16,13 +13,13 @@ import {
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";
-import { createFreezeDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
+import { createThawDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
 import { Metaplex } from "@metaplex-foundation/js";
 
-const freezeTokenAccount: NextApiHandler = async (req, response) => {
-  const { tokenMintAddress, walletAddress } = req.body;
+const freezeTokenAccounts: NextApiHandler = async (req, response) => {
+  const { tokenMintAddresses, walletAddress } = req.body;
 
-  if (!tokenMintAddress || !walletAddress)
+  if (!tokenMintAddresses || !walletAddress)
     throw new Error("Missing required fields");
 
   if (!process.env.PRIVATE_KEY) {
@@ -32,31 +29,31 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
 
   const connection = new Connection(RPC_ENDPOINT);
   const keypair = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
+  const transaction = new Transaction();
+  const metaplex = Metaplex.make(connection);
 
-  let tokenAccount;
-  try {
-    tokenAccount = await getOrCreateAssociatedTokenAccount(
-      connection,
-      // @ts-ignore
-      new PublicKey(walletAddress),
-      new PublicKey(tokenMintAddress),
-      new PublicKey(walletAddress),
-      false,
-      "confirmed",
-      {},
-      TOKEN_PROGRAM_ID,
-      ASSOCIATED_TOKEN_PROGRAM_ID
-    );
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error });
-    return;
-  }
+  let confirmation;
+  for (const tokenMintAddress of tokenMintAddresses) {
+    let tokenAccount;
+    try {
+      tokenAccount = await getOrCreateAssociatedTokenAccount(
+        connection,
+        // @ts-ignore
+        new PublicKey(walletAddress),
+        new PublicKey(tokenMintAddress),
+        new PublicKey(walletAddress),
+        false,
+        "confirmed",
+        {},
+        TOKEN_PROGRAM_ID,
+        ASSOCIATED_TOKEN_PROGRAM_ID
+      );
+    } catch (error) {
+      console.error(error);
+      response.status(500).json({ error });
+      return;
+    }
 
-  try {
-    let confirmation;
-    const transaction = new Transaction();
-    const metaplex = Metaplex.make(connection);
     const nft = await metaplex
       .nfts()
       .findByMint({ mintAddress: new PublicKey(tokenMintAddress) })
@@ -68,7 +65,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
       return;
     }
     transaction.add(
-      createFreezeDelegatedAccountInstruction({
+      createThawDelegatedAccountInstruction({
         delegate: new PublicKey(STAKING_WALLET_ADDRESS),
         tokenAccount: tokenAccount.address,
         edition: mintAuthorityAddress,
@@ -76,7 +73,9 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
         tokenProgram: TOKEN_PROGRAM_ID,
       })
     );
+  }
 
+  try {
     const latestBlockHash = await connection.getLatestBlockhash();
     transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = new PublicKey(STAKING_WALLET_ADDRESS);
@@ -105,4 +104,4 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
   }
 };
 
-export default freezeTokenAccount;
+export default freezeTokenAccounts;
