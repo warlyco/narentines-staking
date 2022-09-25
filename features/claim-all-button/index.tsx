@@ -1,31 +1,57 @@
+import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
-import { useState } from "react";
+import { GOODS_TOKEN_MINT_ADDRESS } from "constants/constants";
+import { useIsLoading } from "hooks/is-loading";
+import { useCallback, useEffect, useState } from "react";
+import calculatePrimaryReward from "utils/calculate-primary-reward";
+import claimPrimaryRewards from "utils/claim-primary-rewards";
 
 type Props = {
   nfts: any[];
+  walletAddress: string;
 };
 
-const ClaimAllButton = ({ nfts }: Props) => {
+const ClaimAllButton = ({ nfts, walletAddress }: Props) => {
+  const { isLoading, setIsLoading } = useIsLoading();
   const [payoutAmount, setPayoutAmount] = useState(0);
+  const { publicKey } = useWallet();
 
-  const calulateRewards = async () => {
-    console.log({ nfts });
-    const mintAddresses = nfts.map((nft) => nft.mintAddress);
-    const { data } = await axios.post("/api/calculate-rewards", {
-      mintAddresses,
+  const calulateRewards = useCallback(() => {
+    if (!nfts?.length) {
+      setPayoutAmount(0);
+      return;
+    }
+    let totalPayoutAmount = 0;
+    for (const nft of nfts) {
+      totalPayoutAmount += calculatePrimaryReward(nft);
+      console.log("payourt:", calculatePrimaryReward(nft));
+    }
+    setPayoutAmount(Number(totalPayoutAmount));
+  }, [nfts]);
+
+  const claimAllRewards = () => {
+    if (!publicKey) return;
+
+    setIsLoading(true, `Claiming ${payoutAmount} $GOODS`);
+    claimPrimaryRewards({
+      nfts,
+      primaryRewardAmount: payoutAmount,
+      setIsLoading,
+      publicKey,
+      setPrimaryRewardAmount: setPayoutAmount,
     });
-    setPayoutAmount(data.payoutAmount);
   };
 
-  const claimAllRewards = () => {};
-  // calulateRewards();
+  useEffect(() => {
+    calulateRewards();
+  }, [calulateRewards, nfts]);
 
   return (
     <button
       onClick={claimAllRewards}
-      className="border-2 border-green-800 bg-green-800 text-2xl p-2 rounded text-amber-400 hover:bg-amber-200 hover:text-green-800 uppercase"
+      className="border-2 border-green-800 bg-green-800 text-2xl p-2 rounded text-amber-400 hover:bg-amber-200 hover:text-green-800 uppercase px-3"
     >
-      Claim All
+      {`Claim All`}
     </button>
   );
 };

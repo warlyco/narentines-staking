@@ -4,16 +4,16 @@ import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import { ProfessionIds, STAKING_WALLET_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
+import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { WalletTypes } from "types";
+import calculatePrimaryReward from "utils/calculate-primary-reward";
 import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
 type Props = {
-  hasUnclaimedRewards: boolean;
   activeWallet: WalletTypes;
   nft: Metadata;
   professionId: ProfessionIds;
-  fetchNfts: () => Promise<void>;
   claimReward: () => Promise<boolean | undefined>;
   removeFromDispayedNfts: (nft: any[]) => void;
 };
@@ -21,13 +21,13 @@ type Props = {
 const StakeUnstakeButtons = ({
   activeWallet,
   nft,
-  fetchNfts,
   professionId,
   removeFromDispayedNfts,
-  hasUnclaimedRewards,
   claimReward,
 }: Props) => {
   const { setIsLoading, setLoadingMessage } = useIsLoading();
+  const [hasUnclaimedRewards, setHasUnclaimedRewards] = useState(false);
+  const [primaryRewardAmount, setPrimaryRewardAmount] = useState(0);
 
   const { publicKey, signTransaction, sendTransaction, signAllTransactions } =
     useWallet();
@@ -50,6 +50,8 @@ const StakeUnstakeButtons = ({
   };
 
   const unstakeNft = async () => {
+    setPrimaryRewardAmount(calculatePrimaryReward(nft));
+
     if (!publicKey || !signTransaction) {
       console.log("error", "Wallet not connected!");
       return;
@@ -78,8 +80,8 @@ const StakeUnstakeButtons = ({
     const tokenMintAddress = nft.mintAddress;
 
     try {
-      const { data, status } = await axios.post("/api/thaw-token-account", {
-        tokenMintAddress,
+      const { data, status } = await axios.post("/api/thaw-token-accounts", {
+        tokenMintAddresses: [tokenMintAddress],
         walletAddress: publicKey.toString(),
       });
       if (status === 200) {
@@ -98,6 +100,10 @@ const StakeUnstakeButtons = ({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setHasUnclaimedRewards(Number(primaryRewardAmount.toFixed(2)) > 0.1);
+  }, [primaryRewardAmount]);
 
   return (
     <button

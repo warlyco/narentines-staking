@@ -2,7 +2,7 @@ import toast from "react-hot-toast";
 
 type Props = {
   primaryMessage: string;
-  secondaryMessage: string;
+  secondaryMessage?: string;
 };
 
 const showToast = ({ primaryMessage, secondaryMessage }: Props) => {

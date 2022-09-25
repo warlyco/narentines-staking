@@ -1,7 +1,5 @@
 import type { NextApiHandler } from "next";
-import request from "graphql-request";
 import { RPC_ENDPOINT, STAKING_WALLET_ADDRESS } from "constants/constants";
-import fs from "fs";
 import {
   Connection,
   Keypair,
@@ -9,7 +7,6 @@ import {
   sendAndConfirmTransaction,
   Transaction,
 } from "@solana/web3.js";
-import { keypairIdentity, Metaplex } from "@metaplex-foundation/js";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   createTransferInstruction,

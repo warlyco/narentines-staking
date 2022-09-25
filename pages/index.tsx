@@ -257,6 +257,7 @@ const Home: NextPage = () => {
                     removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
                   />
                   <ClaimAllButton
+                    walletAddress={publicKey?.toString()}
                     nfts={
                       shouldDisplayNfts
                         ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)

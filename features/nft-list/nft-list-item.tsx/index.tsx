@@ -20,7 +20,7 @@ import { useIsLoading } from "hooks/is-loading";
 import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import claimPrimaryReward from "utils/claim-primary-reward";
+import claimPrimaryRewards from "utils/claim-primary-rewards";
 import calculatePrimaryReward from "utils/calculate-primary-reward";
 
 type Props = {
@@ -53,15 +53,15 @@ const NftListItem = ({
   const { setIsLoading } = useIsLoading();
   const { publicKey } = useWallet();
 
-  const handleClaimPrimaryReward = () => {
+  const handleClaimPrimaryRewards = () => {
     if (!publicKey) {
       throw new Error("Wallet not connected!");
     }
 
-    return claimPrimaryReward({
+    return claimPrimaryRewards({
       primaryRewardAmount,
       setIsLoading,
-      nft,
+      nfts: [nft],
       publicKey,
       setPrimaryRewardAmount,
     });
@@ -194,14 +194,10 @@ const NftListItem = ({
             })}
           >
             <StakeUnstakeButtons
-              hasUnclaimedRewards={
-                Number(primaryRewardAmount.toString(2)) > 0.1
-              }
-              claimReward={handleClaimPrimaryReward}
+              claimReward={handleClaimPrimaryRewards}
               removeFromDispayedNfts={removeFromDispayedNfts}
               nft={nft}
               activeWallet={activeWallet}
-              fetchNfts={fetchNfts}
               professionId={selectedProfessionId}
             />
           </div>
@@ -216,7 +212,7 @@ const NftListItem = ({
                   "border-slate-500 bg-slate-500 text-amber-200 cursor-not-allowed":
                     primaryRewardAmount === 0,
                 })}
-                onClick={handleClaimPrimaryReward}
+                onClick={handleClaimPrimaryRewards}
                 disabled={primaryRewardAmount === 0}
               >
                 Claim

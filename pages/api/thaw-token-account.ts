@@ -29,7 +29,7 @@ import {
 } from "@metaplex-foundation/mpl-token-metadata";
 import { Metaplex } from "@metaplex-foundation/js";
 
-const freezeTokenAccount: NextApiHandler = async (req, response) => {
+const thawTokenAccount: NextApiHandler = async (req, response) => {
   const { tokenMintAddress, walletAddress } = req.body;
 
   if (!tokenMintAddress || !walletAddress)
@@ -40,6 +40,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
     return;
   }
 
+  console.log(1);
   const connection = new Connection(RPC_ENDPOINT);
   const keypair = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
 
@@ -77,7 +78,7 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
       response.status(500).json({ error: "Could not find mint authority" });
       return;
     }
-
+    console.log(2);
     transaction.add(
       createThawDelegatedAccountInstruction({
         delegate: new PublicKey(STAKING_WALLET_ADDRESS),
@@ -114,4 +115,4 @@ const freezeTokenAccount: NextApiHandler = async (req, response) => {
   }
 };
 
-export default freezeTokenAccount;
+export default thawTokenAccount;

@@ -18,6 +18,7 @@ import {
   STAKING_COST_IN_SOL,
   STAKING_WALLET_ADDRESS,
 } from "constants/constants";
+import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
 import toast from "react-hot-toast";
 
@@ -130,28 +131,32 @@ const stakeNftsNonCustodial = async ({
       "finalized"
     );
 
-    const { data } = await axios.post("/api/freeze-token-accounts", {
-      tokenMintAddresses,
-      walletAddress: publicKey.toString(),
-    });
+    try {
+      const { data } = await axios.post("/api/freeze-token-accounts", {
+        tokenMintAddresses,
+        walletAddress: publicKey.toString(),
+      });
+      toast.custom(
+        <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
+          <div className="font-bold text-3xl">Staked!</div>
+          <a
+            className="underline"
+            href={`https://explorer.solana.com/tx/${signature}`}
+            target="_blank"
+            rel="noreferrer"
+          >
+            View on Solana Explorer
+          </a>
+        </div>
+      );
 
-    console.log({ data, signature });
-
-    toast.custom(
-      <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
-        <div className="font-bold text-3xl">Staked!</div>
-        <a
-          className="underline"
-          href={`https://explorer.solana.com/tx/${signature}`}
-          target="_blank"
-          rel="noreferrer"
-        >
-          View on Solana Explorer
-        </a>
-      </div>
-    );
-
-    removeFromDispayedNfts(tokenMintAddresses);
+      removeFromDispayedNfts(tokenMintAddresses);
+    } catch (error) {
+      showToast({
+        primaryMessage: "There was a problem staking",
+        secondaryMessage: "Please try again",
+      });
+    }
   } catch (error: any) {
     console.log("could not confirm", error);
     if (error.message.includes("Node is behind by")) {

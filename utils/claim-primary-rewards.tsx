@@ -4,15 +4,15 @@ import { GOODS_TOKEN_MINT_ADDRESS } from "constants/constants";
 import toast from "react-hot-toast";
 
 type Args = {
-  nft: any;
+  nfts: any[];
   primaryRewardAmount: number;
   setIsLoading: (isLoading: boolean, message?: string) => void;
   publicKey: PublicKey;
   setPrimaryRewardAmount: (amount: number) => void;
 };
 
-const claimPrimaryReward: ({
-  nft,
+const claimPrimaryRewards: ({
+  nfts,
   primaryRewardAmount,
   setIsLoading,
   publicKey,
@@ -20,16 +20,17 @@ const claimPrimaryReward: ({
 }: Args) => Promise<boolean | undefined> = async ({
   primaryRewardAmount,
   setIsLoading,
-  nft,
+  nfts,
   publicKey,
   setPrimaryRewardAmount,
 }) => {
   if (primaryRewardAmount === 0) return;
   return new Promise(async (resolve, reject) => {
     setIsLoading(true, `Claiming ${primaryRewardAmount.toFixed(2)} $GOODS`);
-    console.log({ nft });
+    const mintAddresses = nfts.map((nft) => nft.mintAddress);
+
     const { data, status } = await axios.post("/api/init-reward-claim", {
-      mintAddresses: [nft.mintAddress],
+      mintAddresses,
       rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
       walletAddress: publicKey?.toString(),
     });
@@ -80,4 +81,4 @@ const claimPrimaryReward: ({
   });
 };
 
-export default claimPrimaryReward;
+export default claimPrimaryRewards;

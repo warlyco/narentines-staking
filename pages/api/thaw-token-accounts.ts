@@ -16,7 +16,7 @@ import {
 import { createThawDelegatedAccountInstruction } from "@metaplex-foundation/mpl-token-metadata";
 import { Metaplex } from "@metaplex-foundation/js";
 
-const freezeTokenAccounts: NextApiHandler = async (req, response) => {
+const thawTokenAccounts: NextApiHandler = async (req, response) => {
   const { tokenMintAddresses, walletAddress } = req.body;
 
   if (!tokenMintAddresses || !walletAddress)
@@ -104,4 +104,4 @@ const freezeTokenAccounts: NextApiHandler = async (req, response) => {
   }
 };
 
-export default freezeTokenAccounts;
+export default thawTokenAccounts;
