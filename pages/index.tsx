@@ -243,16 +243,16 @@ const Home: NextPage = () => {
               </Link>
             </div>
             <div className="items-center space-x-2 -mt-[1px] flex">
-              <StakeAllButton
-                nfts={
-                  shouldDisplayNfts
-                    ? activeWallet === WalletTypes.USER
+              {activeWallet === WalletTypes.USER && (
+                <StakeAllButton
+                  nfts={
+                    shouldDisplayNfts
                       ? nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
-                      : nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
-                    : []
-                }
-                removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
-              />
+                      : []
+                  }
+                  removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
+                />
+              )}
               <div className="hidden md:flex">
                 <WalletMultiButton />
               </div>

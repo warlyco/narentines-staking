@@ -1,7 +1,6 @@
 import type { NextApiHandler } from "next";
 import request from "graphql-request";
 import {
-  GOODS_TOKEN_MINT_ADDRESS,
   MS_PER_DAY,
   PRIMARY_REWARD_AMOUNT_PER_DAY,
   RPC_ENDPOINT,
