@@ -1,5 +1,30 @@
-const StakeAllButton = () => {
-  const stakeAllNfts = () => {};
+import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import { useIsLoading } from "hooks/is-loading";
+import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
+
+type Props = {
+  nfts: any[];
+  clearDisplayedNfts: (nft: any[]) => void;
+};
+
+const StakeAllButton = ({ nfts, clearDisplayedNfts }: Props) => {
+  const { isLoading, setIsLoading } = useIsLoading();
+  const { connection } = useConnection();
+  const { publicKey, signTransaction, signAllTransactions, sendTransaction } =
+    useWallet();
+
+  const stakeAllNfts = () => {
+    if (!publicKey || !signTransaction) return;
+
+    stakeNftsNonCustodial({
+      nfts,
+      publicKey,
+      signTransaction,
+      connection,
+      setIsLoading,
+      removeFromDispayedNfts: clearDisplayedNfts,
+    });
+  };
   return (
     <button
       onClick={stakeAllNfts}

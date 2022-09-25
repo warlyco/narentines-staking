@@ -24,35 +24,23 @@ import toast from "react-hot-toast";
 type Params = {
   publicKey: PublicKey;
   signTransaction: (transaction: Transaction) => Promise<Transaction>;
-  signAllTransactions:
-    | ((transaction: Transaction[]) => Promise<Transaction[]>)
-    | undefined;
-  sendTransaction: (
-    transaction: Transaction,
-    connection: Connection,
-    options?: SendTransactionOptions | undefined
-  ) => Promise<string>;
   nfts: Metadata[];
   connection: Connection;
   setIsLoading: (isLoading: boolean, message?: string) => void;
-  fetchNfts: () => Promise<void>;
-  professionId: string;
+  professionId?: string;
   removeFromDispayedNfts: (nft: any[]) => void;
 };
 
 const stakeNftsNonCustodial = async ({
   publicKey,
   signTransaction,
-  signAllTransactions,
-  sendTransaction,
   nfts,
   connection,
   setIsLoading,
-  fetchNfts,
   professionId,
   removeFromDispayedNfts,
 }: Params) => {
-  if (!publicKey || !signTransaction || !signAllTransactions) {
+  if (!publicKey || !signTransaction) {
     console.log("error", "Wallet not connected!");
     return;
   }

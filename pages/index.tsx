@@ -42,6 +42,7 @@ const Home: NextPage = () => {
   >([]);
   const [nftsToDisplay, setNftsToDisplay] = useState<Metadata[] | null>(null);
   const [isLoadingNfts, setIsLoadingNfts] = useState<boolean>(false);
+  const [shouldDisplayNfts, setShouldDisplayNfts] = useState<boolean>(true);
 
   const { publicKey } = useWallet();
   const { connection } = useConnection();
@@ -242,7 +243,16 @@ const Home: NextPage = () => {
               </Link>
             </div>
             <div className="items-center space-x-2 -mt-[1px] hidden md:flex">
-              <StakeAllButton />
+              <StakeAllButton
+                nfts={
+                  shouldDisplayNfts
+                    ? activeWallet === WalletTypes.USER
+                      ? nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
+                      : nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                    : []
+                }
+                clearDisplayedNfts={() => setShouldDisplayNfts(false)}
+              />
               <WalletMultiButton />
             </div>
           </div>
@@ -250,9 +260,11 @@ const Home: NextPage = () => {
             fetchNfts={fetchNfts}
             activeWallet={activeWallet}
             nfts={
-              activeWallet === WalletTypes.USER
-                ? nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
-                : nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+              shouldDisplayNfts
+                ? activeWallet === WalletTypes.USER
+                  ? nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
+                  : nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                : []
             }
             isLoadingNfts={isLoadingNfts}
           />
