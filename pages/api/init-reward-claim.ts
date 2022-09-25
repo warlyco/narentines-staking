@@ -23,61 +23,67 @@ import {
 import { UPDATE_NFT_CLAIM_TIME } from "graphql/mutations/update-nft-claim-time";
 import { FETCH_NFT } from "graphql/queries/fetch-nft";
 import dayjs from "dayjs";
+import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
+import { UPDATE_NFTS_CLAIM_TIME } from "graphql/mutations/update-nfts-claim-time";
 
 const initRewardClaim: NextApiHandler = async (req, response) => {
-  const { mintAddress, rewardTokenAddress, walletAddress } = req.body;
+  const { mintAddresses, rewardTokenAddress, walletAddress } = req.body;
 
   if (
-    !mintAddress ||
+    !mintAddresses ||
     !rewardTokenAddress ||
     !walletAddress ||
     !process.env.PRIVATE_KEY
   )
     throw new Error("Missing required fields");
 
-  let nft;
+  let nftsInDb;
   try {
     // Fetch the NFT from the database
     const { nfts } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: FETCH_NFT,
+      document: FETCH_NFTS_BY_MINT_ADDRESSES,
       variables: {
-        mintAddress,
+        mintAddresses,
       },
       requestHeaders: {
         "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
       },
     });
-    nft = nfts[0];
-    console.log("Fetched NFT from database", nft);
+    nftsInDb = nfts;
+    console.log("Fetched NFTs from database", nftsInDb);
   } catch (error) {
     console.log(error);
     response.status(500).json({ error });
   }
 
-  const { timestamp, lastClaimTimestamp } = nft;
-  const now = dayjs();
-  let stakingTime;
-  if (!lastClaimTimestamp) {
-    stakingTime = dayjs(timestamp);
-  } else {
-    stakingTime = dayjs(lastClaimTimestamp);
-  }
-  const timeSinceStakingInMs = now.diff(stakingTime);
-  const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
+  let totalPayoutAmount = 0;
+  nftsInDb.forEach(async (nft: any) => {
+    const { timestamp, lastClaimTimestamp } = nft;
+    const now = dayjs();
+    let stakingTime;
+    if (!lastClaimTimestamp) {
+      stakingTime = dayjs(timestamp);
+    } else {
+      stakingTime = dayjs(lastClaimTimestamp);
+    }
+    const timeSinceStakingInMs = now.diff(stakingTime);
+    const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
 
-  const rewardAmount = Number(
-    (timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY).toFixed(2)
-  );
-
-  console.log({ rewardAmount });
+    const rewardAmount = Number(
+      (timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY).toFixed(2)
+    );
+    totalPayoutAmount += rewardAmount;
+    console.log({ rewardAmount });
+  });
+  console.log({ totalPayoutAmount });
 
   try {
     const { update_nfts_by_pk } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: UPDATE_NFT_CLAIM_TIME,
+      document: UPDATE_NFTS_CLAIM_TIME,
       variables: {
-        mintAddress,
+        mintAddresses,
         lastClaimTimestamp: new Date().toISOString(),
       },
       requestHeaders: {
@@ -136,8 +142,7 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
       fromTokenAccount.address,
       toTokenAccount.address,
       new PublicKey(STAKING_WALLET_ADDRESS),
-      // amount * 100,
-      rewardAmount * 100,
+      totalPayoutAmount * 100,
       [],
       TOKEN_PROGRAM_ID
     )

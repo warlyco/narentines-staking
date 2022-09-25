@@ -1,16 +1,10 @@
-import {
-  FindNftsByOwnerOutput,
-  Metadata,
-  Metaplex,
-  Nft,
-} from "@metaplex-foundation/js";
+import { Metadata, Metaplex } from "@metaplex-foundation/js";
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui";
 import classNames from "classnames";
-import { CREATOR_ADDRESS, STAKING_WALLET_ADDRESS } from "constants/constants";
+import { CREATOR_ADDRESS } from "constants/constants";
 import ClientOnly from "features/client-only";
 import NftListWrapper from "features/user-nft-list";
-import UserNftList from "features/user-nft-list";
 import type { NextPage } from "next";
 import { useCallback, useEffect, useState } from "react";
 import { WalletTypes } from "types";
@@ -19,12 +13,9 @@ import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint
 import axios from "axios";
 import { useRouter } from "next/router";
 import Link from "next/link";
-import showToast from "features/toasts/toast";
 import StakeAllButton from "features/stake-all-button";
 import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
-  getAccount,
-  getAssociatedTokenAddress,
   getOrCreateAssociatedTokenAccount,
   TOKEN_PROGRAM_ID,
 } from "@solana/spl-token";

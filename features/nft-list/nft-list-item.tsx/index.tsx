@@ -21,6 +21,7 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import claimPrimaryReward from "utils/claim-primary-reward";
+import calculatePrimaryReward from "utils/calculate-primary-reward";
 
 type Props = {
   removeFromDispayedNfts: (nft: Nft[]) => void;
@@ -80,18 +81,6 @@ const NftListItem = ({
     return { timeSinceStakingInMs, timeSinceStakingInDays };
   }, [nft]);
 
-  const calculatePrimaryReward = useCallback(() => {
-    const { timeSinceStakingInDays } = getStakingTime();
-    let dailyRewardAmount = PRIMARY_REWARD_AMOUNT_PER_DAY;
-
-    // if (nft?.profession?.id === ProfessionIds.BANKER) {
-    //   dailyRewardAmount += nft?.profession?.dailyRewardRate;
-    // }
-
-    const rewardAmount = timeSinceStakingInDays * dailyRewardAmount;
-    setPrimaryRewardAmount(rewardAmount);
-  }, [getStakingTime]);
-
   const handleUpdateSelectedProfession = (e: any) => {
     console.log(e.target);
     setSelectedProfessionId(e.target.value);
@@ -121,11 +110,11 @@ const NftListItem = ({
 
   useEffect(() => {
     if (!nft) return;
-    calculatePrimaryReward();
+    const reward = calculatePrimaryReward(nft);
+    setPrimaryRewardAmount(reward);
     // calculateSecondaryReward();
     // updateSecondaryRewardLabel();
   }, [
-    calculatePrimaryReward,
     professionsData,
     nft,
     calculateSecondaryReward,

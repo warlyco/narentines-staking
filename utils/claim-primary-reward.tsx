@@ -29,7 +29,7 @@ const claimPrimaryReward: ({
     setIsLoading(true, `Claiming ${primaryRewardAmount.toFixed(2)} $GOODS`);
     console.log({ nft });
     const { data, status } = await axios.post("/api/init-reward-claim", {
-      mintAddress: nft.mintAddress,
+      mintAddresses: [nft.mintAddress],
       rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
       walletAddress: publicKey?.toString(),
     });
