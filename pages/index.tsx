@@ -236,36 +236,41 @@ const Home: NextPage = () => {
               </Link>
             </div>
             <div className="items-center space-x-2 -mt-[1px] flex py-4">
-              {activeWallet === WalletTypes.USER && (
-                <StakeAllButton
-                  nfts={
-                    shouldDisplayNfts
-                      ? nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
-                      : []
-                  }
-                  removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
-                />
-              )}
-              {activeWallet === WalletTypes.STAKING && (
-                <>
-                  <UnstakeAllButton
+              {activeWallet === WalletTypes.USER &&
+                shouldDisplayNfts &&
+                !!nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
+                  ?.length && (
+                  <StakeAllButton
                     nfts={
                       shouldDisplayNfts
-                        ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                        ? nftsFromDb?.nfts.filter((nft: any) => !nft.isFrozen)
                         : []
                     }
                     removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
                   />
-                  <ClaimAllButton
-                    walletAddress={publicKey?.toString()}
-                    nfts={
-                      shouldDisplayNfts
-                        ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
-                        : []
-                    }
-                  />
-                </>
-              )}
+                )}
+              {activeWallet === WalletTypes.STAKING &&
+                shouldDisplayNfts &&
+                !!nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen) && (
+                  <>
+                    <UnstakeAllButton
+                      nfts={
+                        shouldDisplayNfts
+                          ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                          : []
+                      }
+                      removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
+                    />
+                    <ClaimAllButton
+                      walletAddress={publicKey?.toString()}
+                      nfts={
+                        shouldDisplayNfts
+                          ? nftsFromDb?.nfts.filter((nft: any) => nft.isFrozen)
+                          : []
+                      }
+                    />
+                  </>
+                )}
               <div className="hidden md:flex">
                 <WalletMultiButton />
               </div>

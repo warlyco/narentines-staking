@@ -1,6 +1,16 @@
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import axios from "axios";
-import { STAKING_WALLET_ADDRESS } from "constants/constants";
+import {
+  MINIMUM_PAYOUT_AMOUNT,
+  STAKING_COST_IN_SOL,
+  STAKING_WALLET_ADDRESS,
+} from "constants/constants";
 import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
 import { chunk } from "lodash";
@@ -32,7 +42,9 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
       totalPayoutAmount += calculatePrimaryReward(nft);
     }
     setPayoutAmount(Number(totalPayoutAmount));
-    setHasUnclaimedRewards(Number(totalPayoutAmount.toFixed(2)) > 0.1);
+    setHasUnclaimedRewards(
+      Number(totalPayoutAmount.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
+    );
     console.log(
       totalPayoutAmount,
       Number(totalPayoutAmount.toFixed(2)),
@@ -41,7 +53,58 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
   }, [hasUnclaimedRewards, nfts]);
 
   const unstakeAllNfts = async () => {
-    if (!publicKey) return;
+    if (!publicKey || !signTransaction) return;
+    calulateRewards();
+
+    setIsLoading(
+      true,
+      hasUnclaimedRewards ? "Claiming & Unstaking..." : "Unstaking..."
+    );
+    const transaction = new Transaction();
+    const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
+    const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
+
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+        lamports: solInLamports,
+      })
+    );
+
+    const latestBlockHash = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = latestBlockHash.blockhash;
+    transaction.feePayer = publicKey;
+    let signedTransaction;
+    try {
+      signedTransaction = await signTransaction(transaction);
+    } catch (error) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const signature = await connection.sendRawTransaction(
+        signedTransaction.serialize(),
+        {
+          preflightCommitment: "confirmed",
+        }
+      );
+      await connection.confirmTransaction(
+        {
+          signature,
+          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+          blockhash: latestBlockHash.blockhash,
+        },
+        "confirmed"
+      );
+    } catch (error) {
+      showToast({
+        primaryMessage: "There was an problem",
+        secondaryMessage: "Please try again",
+      });
+      return;
+    }
 
     let claimWasSuccessful;
     if (hasUnclaimedRewards) {
@@ -51,6 +114,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
         setIsLoading,
         publicKey,
         setPrimaryRewardAmount: setPayoutAmount,
+        isOnlyAction: true,
       });
     }
 
@@ -65,7 +129,6 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
       throw new Error("Claiming rewards failed");
     }
 
-    setIsLoading(true, `Unstaking NFTs`);
     try {
       const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
       const splitTokenMintAddresses = chunk(tokenMintAddresses, 10);
@@ -76,8 +139,9 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
         });
       }
       showToast({
-        primaryMessage: "Unstaked",
+        primaryMessage: "Unstaked!",
       });
+      removeFromDispayedNfts(tokenMintAddresses);
     } catch (error) {
       showToast({
         primaryMessage: "There was a problem",

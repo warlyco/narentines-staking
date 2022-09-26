@@ -100,6 +100,13 @@ const thawTokenAccounts: NextApiHandler = async (req, response) => {
     // if (error?.includes('Node is behind by ')))
     response.status(500).send(error);
     console.error("the error is:", error);
+    // @ts-ignore
+    console.error("the log is:", error.logs[4]);
+    console.error(
+      "is invalid account state:",
+      // @ts-ignore
+      error.logs[5].includes("Invalid account state for operation")
+    );
     return;
   }
 };

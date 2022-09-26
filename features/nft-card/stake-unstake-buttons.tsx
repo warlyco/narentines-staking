@@ -1,13 +1,26 @@
 import { Metadata } from "@metaplex-foundation/js";
 
 import { useConnection, useWallet } from "@solana/wallet-adapter-react";
+import {
+  LAMPORTS_PER_SOL,
+  PublicKey,
+  SystemProgram,
+  Transaction,
+} from "@solana/web3.js";
 import axios from "axios";
-import { ProfessionIds, STAKING_WALLET_ADDRESS } from "constants/constants";
+import {
+  MINIMUM_PAYOUT_AMOUNT,
+  ProfessionIds,
+  STAKING_COST_IN_SOL,
+  STAKING_WALLET_ADDRESS,
+} from "constants/constants";
+import showToast from "features/toasts/toast";
 import { useIsLoading } from "hooks/is-loading";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { WalletTypes } from "types";
 import calculatePrimaryReward from "utils/calculate-primary-reward";
+import claimPrimaryRewards from "utils/claim-primary-rewards";
 import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
 type Props = {
@@ -51,6 +64,9 @@ const StakeUnstakeButtons = ({
 
   const unstakeNft = async () => {
     setPrimaryRewardAmount(calculatePrimaryReward(nft));
+    setHasUnclaimedRewards(
+      Number(primaryRewardAmount.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
+    );
 
     if (!publicKey || !signTransaction) {
       console.log("error", "Wallet not connected!");
@@ -60,9 +76,65 @@ const StakeUnstakeButtons = ({
       throw new Error("STAKING_WALLET_ADDRESS is not defined");
     }
 
+    const transaction = new Transaction();
+    const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
+    const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
+    setIsLoading(
+      true,
+      hasUnclaimedRewards ? "Claiming & Unstaking..." : "Unstaking..."
+    );
+    transaction.add(
+      SystemProgram.transfer({
+        fromPubkey: publicKey,
+        toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+        lamports: solInLamports,
+      })
+    );
+
+    const latestBlockHash = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = latestBlockHash.blockhash;
+    transaction.feePayer = publicKey;
+    let signedTransaction;
+    try {
+      signedTransaction = await signTransaction(transaction);
+    } catch (error) {
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const signature = await connection.sendRawTransaction(
+        signedTransaction.serialize(),
+        {
+          preflightCommitment: "confirmed",
+        }
+      );
+      await connection.confirmTransaction(
+        {
+          signature,
+          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+          blockhash: latestBlockHash.blockhash,
+        },
+        "confirmed"
+      );
+    } catch (error) {
+      showToast({
+        primaryMessage: "There was an problem",
+        secondaryMessage: "Please try again",
+      });
+      return;
+    }
+
     let claimWasSuccessful;
     if (hasUnclaimedRewards) {
-      claimWasSuccessful = await claimReward();
+      claimWasSuccessful = await claimPrimaryRewards({
+        nfts: [nft],
+        primaryRewardAmount,
+        setIsLoading,
+        publicKey,
+        setPrimaryRewardAmount,
+        isOnlyAction: false,
+      });
     }
 
     if (hasUnclaimedRewards && !claimWasSuccessful) {
@@ -76,7 +148,6 @@ const StakeUnstakeButtons = ({
       throw new Error("Claiming rewards failed");
     }
 
-    setIsLoading(true, "Unstaking...");
     const tokenMintAddress = nft.mintAddress;
 
     try {
@@ -102,16 +173,24 @@ const StakeUnstakeButtons = ({
   };
 
   useEffect(() => {
-    setHasUnclaimedRewards(Number(primaryRewardAmount.toFixed(2)) > 0.1);
-  }, [primaryRewardAmount]);
+    if (!nft) return;
+    setPrimaryRewardAmount(calculatePrimaryReward(nft));
+    setHasUnclaimedRewards(
+      Number(primaryRewardAmount.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
+    );
+    console.log(Number(primaryRewardAmount.toFixed(2)));
+    // debugger;
+  }, [primaryRewardAmount, nft]);
 
   return (
-    <button
-      className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
-      onClick={activeWallet === WalletTypes.USER ? stakeNft : unstakeNft}
-    >
-      {activeWallet === WalletTypes.USER ? "Stake" : "Unstake"}
-    </button>
+    <>
+      <button
+        className="flex-grow border-2 border-green-800 uppercase bg-green-800 p-2 pt-3 rounded text-amber-200 hover:bg-amber-200 hover:text-green-800 font-medium"
+        onClick={activeWallet === WalletTypes.USER ? stakeNft : unstakeNft}
+      >
+        {activeWallet === WalletTypes.USER ? "Stake" : "Unstake"}
+      </button>
+    </>
   );
 };
 

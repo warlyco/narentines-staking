@@ -129,7 +129,7 @@ const stakeNftsNonCustodial = async ({
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
         blockhash: latestBlockHash.blockhash,
       },
-      "finalized"
+      "confirmed"
     );
 
     try {
@@ -140,7 +140,7 @@ const stakeNftsNonCustodial = async ({
           walletAddress: publicKey.toString(),
         });
         const resetRes = await axios.post("/api/reset-nfts-claim-time", {
-          tokenMintAddresses,
+          mintAddresses: tokenMintAddresses,
         });
       }
       toast.custom(

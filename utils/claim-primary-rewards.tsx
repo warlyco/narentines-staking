@@ -9,6 +9,7 @@ type Args = {
   setIsLoading: (isLoading: boolean, message?: string) => void;
   publicKey: PublicKey;
   setPrimaryRewardAmount: (amount: number) => void;
+  isOnlyAction?: boolean;
 };
 
 const claimPrimaryRewards: ({
@@ -17,12 +18,14 @@ const claimPrimaryRewards: ({
   setIsLoading,
   publicKey,
   setPrimaryRewardAmount,
+  isOnlyAction,
 }: Args) => Promise<boolean | undefined> = async ({
   primaryRewardAmount,
   setIsLoading,
   nfts,
   publicKey,
   setPrimaryRewardAmount,
+  isOnlyAction = true,
 }) => {
   if (primaryRewardAmount === 0) return;
   return new Promise(async (resolve, reject) => {
@@ -34,7 +37,9 @@ const claimPrimaryRewards: ({
       rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
       walletAddress: publicKey?.toString(),
     });
-    setIsLoading(false);
+    if (isOnlyAction) {
+      setIsLoading(false);
+    }
 
     const { confirmation } = data;
 
