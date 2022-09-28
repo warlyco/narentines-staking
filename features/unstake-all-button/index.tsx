@@ -114,7 +114,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
         setIsLoading,
         publicKey,
         setPrimaryRewardAmount: setPayoutAmount,
-        isOnlyAction: true,
+        isOnlyAction: false,
       });
     }
 
@@ -131,7 +131,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
 
     try {
       const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
-      const splitTokenMintAddresses = chunk(tokenMintAddresses, 10);
+      const splitTokenMintAddresses = chunk(tokenMintAddresses, 8);
       for (const tokenMintAddresses of splitTokenMintAddresses) {
         const { data } = await axios.post("/api/thaw-token-accounts", {
           tokenMintAddresses,
