@@ -23,6 +23,8 @@ import { useIsLoading } from "hooks/is-loading";
 import { chunk } from "lodash";
 import toast from "react-hot-toast";
 
+const INSTRUCTIONS_PER_TRANSACTION = 6;
+
 type Params = {
   publicKey: PublicKey;
   signTransaction: (transaction: Transaction) => Promise<Transaction>;
@@ -133,7 +135,10 @@ const stakeNftsNonCustodial = async ({
     );
 
     try {
-      const splitTokenMintAddresses = chunk(tokenMintAddresses, 9);
+      const splitTokenMintAddresses = chunk(
+        tokenMintAddresses,
+        INSTRUCTIONS_PER_TRANSACTION
+      );
       for (const tokenMintAddresses of splitTokenMintAddresses) {
         const freezeRes = await axios.post("/api/freeze-token-accounts", {
           tokenMintAddresses,
