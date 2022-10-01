@@ -23,7 +23,7 @@ import { useIsLoading } from "hooks/is-loading";
 import { chunk } from "lodash";
 import toast from "react-hot-toast";
 
-const INSTRUCTIONS_PER_TRANSACTION = 6;
+const INSTRUCTIONS_PER_TRANSACTION = 3;
 
 type Params = {
   publicKey: PublicKey;
