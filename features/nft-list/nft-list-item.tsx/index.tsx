@@ -133,7 +133,13 @@ const NftListItem = ({
             )} */}
             <div className="flex text-sm mb-2">
               <div>Staked:&nbsp;</div>
-              <div>{dayjs(nft?.timestamp).format("MM/DD/YYYY @ h:mm A")}</div>
+              <div>
+                {dayjs(
+                  nft?.lastClaimTimestamp
+                    ? nft?.lastClaimTimestamp
+                    : nft?.timestamp
+                ).format("MM/DD/YYYY @ h:mm A")}
+              </div>
             </div>
             <div className="flex flex-col text-sm mb-3">
               <div className="font-bold text-sm tracking-wide uppercase">
