@@ -136,7 +136,7 @@ const stakeNftsNonCustodial = async ({
 
     try {
       const splitTokenMintAddresses = chunk(
-        tokenMintAddresses,
+        tokenMintAddresses.slice(0, 20),
         INSTRUCTIONS_PER_TRANSACTION
       );
       for (const tokenMintAddresses of splitTokenMintAddresses) {
