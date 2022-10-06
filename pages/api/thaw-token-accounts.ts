@@ -105,7 +105,7 @@ const thawTokenAccounts: NextApiHandler = async (req, response) => {
     console.error(
       "is invalid account state:",
       // @ts-ignore
-      error.logs[5].includes("Invalid account state for operation")
+      error?.logs?.[5]?.includes("Invalid account state for operation")
     );
     return;
   }

@@ -23,11 +23,12 @@ import { useIsLoading } from "hooks/is-loading";
 import { chunk } from "lodash";
 import toast from "react-hot-toast";
 
-const INSTRUCTIONS_PER_TRANSACTION = 6;
+const INSTRUCTIONS_PER_TRANSACTION = 9;
 
 type Params = {
   publicKey: PublicKey;
   signTransaction: (transaction: Transaction) => Promise<Transaction>;
+  signAllTransactions: (transactions: Transaction[]) => Promise<Transaction[]>;
   nfts: Metadata[];
   connection: Connection;
   setIsLoading: (isLoading: boolean, message?: string) => void;
@@ -43,6 +44,7 @@ const stakeNftsNonCustodial = async ({
   setIsLoading,
   professionId,
   removeFromDispayedNfts,
+  signAllTransactions,
 }: Params) => {
   if (!publicKey || !signTransaction) {
     console.log("error", "Wallet not connected!");
@@ -55,17 +57,8 @@ const stakeNftsNonCustodial = async ({
 
   const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
 
-  const transaction = new Transaction();
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
-
-  // transaction.add(
-  //   SystemProgram.transfer({
-  //     fromPubkey: publicKey,
-  //     toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
-  //     lamports: solInLamports,
-  //   })
-  // );
 
   let tokenAccountMintAddresses: string[] = [];
   const splitTokenMintAddresses = chunk(
@@ -73,7 +66,17 @@ const stakeNftsNonCustodial = async ({
     INSTRUCTIONS_PER_TRANSACTION
   );
 
+  const paymentTx = new Transaction();
+  paymentTx.add(
+    SystemProgram.transfer({
+      fromPubkey: publicKey,
+      toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+      lamports: solInLamports,
+    })
+  );
+  let transactions = [paymentTx];
   for (const mintAddresses of splitTokenMintAddresses) {
+    const transaction = new Transaction();
     for (const tokenMintAddress of mintAddresses) {
       let tokenAccount;
       try {
@@ -110,46 +113,60 @@ const stakeNftsNonCustodial = async ({
         )
       );
     }
+    const latestBlockHash = await connection.getLatestBlockhash();
+    transaction.recentBlockhash = latestBlockHash.blockhash;
+    transaction.feePayer = publicKey;
+    transactions.push(transaction);
   }
-  const latestBlockHash = await connection.getLatestBlockhash();
-  transaction.recentBlockhash = latestBlockHash.blockhash;
-  transaction.feePayer = publicKey;
-  let signedTransaction;
+  let signedTransactions;
   try {
-    signedTransaction = await signTransaction(transaction);
+    signedTransactions = await signAllTransactions(transactions);
   } catch (error) {
     setIsLoading(false);
     return;
   }
 
+  console.log({ signedTransactions });
+
   let signature;
   try {
-    const signature = await connection.sendRawTransaction(
-      signedTransaction.serialize(),
-      {
-        preflightCommitment: "confirmed",
-      }
-    );
-    const latestBlockHash = await connection.getLatestBlockhash();
-    await connection.confirmTransaction(
-      {
-        signature,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        blockhash: latestBlockHash.blockhash,
-      },
-      "confirmed"
-    );
+    for (let signedTransaction of signedTransactions) {
+      const signature = await connection.sendRawTransaction(
+        signedTransaction.serialize(),
+        {
+          preflightCommitment: "confirmed",
+        }
+      );
+      console.log({ signature });
+      const latestBlockHash = await connection.getLatestBlockhash();
+      const confirmation = await connection.confirmTransaction(
+        {
+          signature,
+          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
+          blockhash: latestBlockHash.blockhash,
+        },
+        "confirmed"
+      );
+      console.log({ confirmation });
+    }
 
     try {
+      let freezeReqs = [];
+      let resetReqs = [];
       for (const tokenMintAddresses of splitTokenMintAddresses) {
-        const freezeRes = await axios.post("/api/freeze-token-accounts", {
+        const freezeReq = axios.post("/api/freeze-token-accounts", {
           tokenMintAddresses,
           walletAddress: publicKey.toString(),
         });
-        const resetRes = await axios.post("/api/reset-nfts-claim-time", {
+        const resetReq = axios.post("/api/reset-nfts-claim-time", {
           mintAddresses: tokenMintAddresses,
         });
+        freezeReqs.push(freezeReq);
+        resetReqs.push(resetReq);
       }
+      const responses = await Promise.all(freezeReqs);
+      console.log({ responses });
+
       toast.custom(
         <div className="flex flex-col bg-amber-200 rounded-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
           <div className="font-bold text-3xl">Staked!</div>

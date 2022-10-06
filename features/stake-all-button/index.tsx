@@ -10,13 +10,14 @@ type Props = {
 const StakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
   const { isLoading, setIsLoading } = useIsLoading();
   const { connection } = useConnection();
-  const { publicKey, signTransaction } = useWallet();
+  const { publicKey, signTransaction, signAllTransactions } = useWallet();
 
   const stakeAllNfts = () => {
-    if (!publicKey || !signTransaction) return;
+    if (!publicKey || !signTransaction || !signAllTransactions) return;
 
     stakeNftsNonCustodial({
       nfts,
+      signAllTransactions,
       publicKey,
       signTransaction,
       connection,
