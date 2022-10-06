@@ -8,7 +8,7 @@ const resetNftsClaimTime: NextApiHandler = async (req, response) => {
   if (!mintAddresses) throw new Error("Missing required fields");
 
   try {
-    const { update_nfts_by_pk } = await request({
+    const { update_nfts } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
       document: UPDATE_NFTS_CLAIM_TIME,
       variables: {
@@ -19,8 +19,8 @@ const resetNftsClaimTime: NextApiHandler = async (req, response) => {
         "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
       },
     });
-    console.log("claim updated", update_nfts_by_pk);
-    response.json({ nft: update_nfts_by_pk });
+    console.log("claim updated", update_nfts);
+    response.json({ nft: update_nfts });
   } catch (error) {
     console.error(error);
     response.status(500).json({ error });

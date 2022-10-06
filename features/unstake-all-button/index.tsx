@@ -137,7 +137,11 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
           tokenMintAddresses,
           walletAddress: publicKey.toString(),
         });
+        await axios.post("/api/reset-nfts-claim-time", {
+          mintAddresses: tokenMintAddresses,
+        });
       }
+
       showToast({
         primaryMessage: "Unstaked!",
       });

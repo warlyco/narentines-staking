@@ -23,7 +23,7 @@ import { useIsLoading } from "hooks/is-loading";
 import { chunk } from "lodash";
 import toast from "react-hot-toast";
 
-const INSTRUCTIONS_PER_TRANSACTION = 3;
+const INSTRUCTIONS_PER_TRANSACTION = 6;
 
 type Params = {
   publicKey: PublicKey;
@@ -59,52 +59,58 @@ const stakeNftsNonCustodial = async ({
   const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
   const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
 
-  transaction.add(
-    SystemProgram.transfer({
-      fromPubkey: publicKey,
-      toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
-      lamports: solInLamports,
-    })
-  );
+  // transaction.add(
+  //   SystemProgram.transfer({
+  //     fromPubkey: publicKey,
+  //     toPubkey: new PublicKey(STAKING_WALLET_ADDRESS),
+  //     lamports: solInLamports,
+  //   })
+  // );
 
   let tokenAccountMintAddresses: string[] = [];
-  for (const tokenMintAddress of tokenMintAddresses) {
-    let tokenAccount;
-    try {
-      tokenAccount = await getOrCreateAssociatedTokenAccount(
-        connection,
-        // @ts-ignore
-        publicKey,
-        new PublicKey(tokenMintAddress),
-        publicKey,
-        false,
-        "confirmed",
-        {},
-        TOKEN_PROGRAM_ID,
-        ASSOCIATED_TOKEN_PROGRAM_ID
+  const splitTokenMintAddresses = chunk(
+    tokenMintAddresses.slice(0, 20),
+    INSTRUCTIONS_PER_TRANSACTION
+  );
+
+  for (const mintAddresses of splitTokenMintAddresses) {
+    for (const tokenMintAddress of mintAddresses) {
+      let tokenAccount;
+      try {
+        tokenAccount = await getOrCreateAssociatedTokenAccount(
+          connection,
+          // @ts-ignore
+          publicKey,
+          new PublicKey(tokenMintAddress),
+          publicKey,
+          false,
+          "confirmed",
+          {},
+          TOKEN_PROGRAM_ID,
+          ASSOCIATED_TOKEN_PROGRAM_ID
+        );
+        tokenAccountMintAddresses.push(tokenAccount.mint.toString());
+      } catch (error) {
+        console.error(error);
+        return;
+      }
+
+      if (!tokenAccount || !tokenAccount.address) {
+        throw new Error("tokenAccount is undefined");
+      }
+
+      transaction.add(
+        createApproveCheckedInstruction(
+          new PublicKey(tokenAccount.address),
+          new PublicKey(tokenMintAddress),
+          new PublicKey(STAKING_WALLET_ADDRESS),
+          publicKey,
+          1,
+          0
+        )
       );
-      tokenAccountMintAddresses.push(tokenAccount.mint.toString());
-    } catch (error) {
-      console.error(error);
-      return;
     }
-
-    if (!tokenAccount || !tokenAccount.address) {
-      throw new Error("tokenAccount is undefined");
-    }
-
-    transaction.add(
-      createApproveCheckedInstruction(
-        new PublicKey(tokenAccount.address),
-        new PublicKey(tokenMintAddress),
-        new PublicKey(STAKING_WALLET_ADDRESS),
-        publicKey,
-        1,
-        0
-      )
-    );
   }
-
   const latestBlockHash = await connection.getLatestBlockhash();
   transaction.recentBlockhash = latestBlockHash.blockhash;
   transaction.feePayer = publicKey;
@@ -135,10 +141,6 @@ const stakeNftsNonCustodial = async ({
     );
 
     try {
-      const splitTokenMintAddresses = chunk(
-        tokenMintAddresses.slice(0, 20),
-        INSTRUCTIONS_PER_TRANSACTION
-      );
       for (const tokenMintAddresses of splitTokenMintAddresses) {
         const freezeRes = await axios.post("/api/freeze-token-accounts", {
           tokenMintAddresses,
