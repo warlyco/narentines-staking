@@ -146,6 +146,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
         primaryMessage: "Unstaked!",
       });
       removeFromDispayedNfts(tokenMintAddresses);
+      setIsLoading(false);
     } catch (error) {
       showToast({
         primaryMessage: "There was a problem",

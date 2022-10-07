@@ -204,7 +204,7 @@ const stakeNftsCustodial = async ({
         lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
         blockhash: latestBlockHash.blockhash,
       },
-      "finalized"
+      "confirmed"
     );
 
     await axios.post("/api/update-nfts-holder", {

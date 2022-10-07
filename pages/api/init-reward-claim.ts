@@ -157,7 +157,7 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
       transaction,
       [keypair],
       {
-        commitment: "finalized",
+        commitment: "confirmed",
         maxRetries: 10,
       }
     );
