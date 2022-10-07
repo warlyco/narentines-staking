@@ -62,7 +62,8 @@ const stakeNft: NextApiHandler = async (req, response) => {
     return;
   }
 
-  const transaction = new Transaction();
+  const latestBlockhash = await connection.getLatestBlockhash();
+  const transaction = new Transaction({ ...latestBlockhash });
   transaction.add(
     createTransferInstruction(
       fromTokenAccount.address,
@@ -76,8 +77,6 @@ const stakeNft: NextApiHandler = async (req, response) => {
 
   let confirmation;
   try {
-    const latestBlockHash = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = latestBlockHash.blockhash;
     console.log("sending transaction...");
 
     confirmation = await sendAndConfirmTransaction(

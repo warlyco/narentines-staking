@@ -53,7 +53,6 @@ const stakeNftsNonCustodial = async ({
   if (!STAKING_WALLET_ADDRESS) {
     throw new Error("STAKING_WALLET_ADDRESS is not defined");
   }
-  setIsLoading(true, "Staking...");
 
   const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
 
@@ -66,7 +65,9 @@ const stakeNftsNonCustodial = async ({
     INSTRUCTIONS_PER_TRANSACTION
   );
 
-  const paymentTx = new Transaction();
+  setIsLoading(true, "Connecting to Solana...");
+  const latestBlockhash = await connection.getLatestBlockhash();
+  const paymentTx = new Transaction({ ...latestBlockhash });
   paymentTx.add(
     SystemProgram.transfer({
       fromPubkey: publicKey,
@@ -76,7 +77,7 @@ const stakeNftsNonCustodial = async ({
   );
   let transactions = [paymentTx];
   for (const mintAddresses of splitTokenMintAddresses) {
-    const transaction = new Transaction();
+    const transaction = new Transaction({ ...latestBlockhash });
     for (const tokenMintAddress of mintAddresses) {
       let tokenAccount;
       try {
@@ -113,11 +114,9 @@ const stakeNftsNonCustodial = async ({
         )
       );
     }
-    const latestBlockHash = await connection.getLatestBlockhash();
-    paymentTx.recentBlockhash = latestBlockHash.blockhash;
     paymentTx.feePayer = publicKey;
-    transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = publicKey;
+
     transactions.push(transaction);
   }
   let signedTransactions;
@@ -132,6 +131,7 @@ const stakeNftsNonCustodial = async ({
 
   let signature;
   try {
+    setIsLoading(true, "Sending transaction to Solana...");
     for (let signedTransaction of signedTransactions) {
       const signature = await connection.sendRawTransaction(
         signedTransaction.serialize(),
@@ -153,6 +153,7 @@ const stakeNftsNonCustodial = async ({
     }
 
     try {
+      setIsLoading(true, "Staking NFTs...");
       let freezeReqs = [];
       let resetReqs = [];
       for (const tokenMintAddresses of splitTokenMintAddresses) {

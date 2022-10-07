@@ -133,7 +133,8 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
     return;
   }
 
-  const transaction = new Transaction();
+  const latestBlockhash = await connection.getLatestBlockhash();
+  const transaction = new Transaction({ ...latestBlockhash });
   transaction.add(
     createTransferInstruction(
       fromTokenAccount.address,

@@ -77,13 +77,11 @@ const StakeUnstakeButtons = ({
       throw new Error("STAKING_WALLET_ADDRESS is not defined");
     }
 
-    const transaction = new Transaction();
+    const latestBlockhash = await connection.getLatestBlockhash();
+    const transaction = new Transaction({ ...latestBlockhash });
     const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
     const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
-    setIsLoading(
-      true,
-      hasUnclaimedRewards ? "Claiming & Unstaking..." : "Unstaking..."
-    );
+    setIsLoading(true, "Connecting to Solana...");
     transaction.add(
       SystemProgram.transfer({
         fromPubkey: publicKey,
@@ -92,8 +90,6 @@ const StakeUnstakeButtons = ({
       })
     );
 
-    const latestBlockHash = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = publicKey;
     let signedTransaction;
     try {
@@ -104,6 +100,7 @@ const StakeUnstakeButtons = ({
     }
 
     try {
+      setIsLoading(true, "Sending transaction to Solana...");
       const signature = await connection.sendRawTransaction(
         signedTransaction.serialize(),
         {
@@ -113,8 +110,8 @@ const StakeUnstakeButtons = ({
       await connection.confirmTransaction(
         {
           signature,
-          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-          blockhash: latestBlockHash.blockhash,
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          blockhash: latestBlockhash.blockhash,
         },
         "confirmed"
       );
@@ -128,6 +125,7 @@ const StakeUnstakeButtons = ({
 
     let claimWasSuccessful;
     if (hasUnclaimedRewards) {
+      setIsLoading(true, `Claiming ${primaryRewardAmount} GOODS`);
       claimWasSuccessful = await claimPrimaryRewards({
         nfts: [nft],
         primaryRewardAmount,
@@ -152,13 +150,14 @@ const StakeUnstakeButtons = ({
     const tokenMintAddress = nft.mintAddress;
 
     try {
+      setIsLoading(true, "Unstaking...");
       const { data, status } = await axios.post("/api/thaw-token-accounts", {
         tokenMintAddresses: [tokenMintAddress],
         walletAddress: publicKey.toString(),
       });
-      if (status === 200) {
-        // TODO: update timestamp
-      }
+      await axios.post("/api/reset-nfts-claim-time", {
+        mintAddresses: [tokenMintAddress],
+      });
       toast.custom(
         <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
           <div className="font-bold text-3xl">Unstaked!</div>
@@ -166,9 +165,9 @@ const StakeUnstakeButtons = ({
       );
 
       removeFromDispayedNfts([tokenMintAddress]);
+      setIsLoading(false);
     } catch (error) {
       console.error(error);
-    } finally {
       setIsLoading(false);
     }
   };

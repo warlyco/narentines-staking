@@ -56,11 +56,9 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
     if (!publicKey || !signTransaction) return;
     calulateRewards();
 
-    setIsLoading(
-      true,
-      hasUnclaimedRewards ? "Claiming & Unstaking..." : "Unstaking..."
-    );
-    const transaction = new Transaction();
+    setIsLoading(true, "Connecting to Solana...");
+    const latestBlockhash = await connection.getLatestBlockhash();
+    const transaction = new Transaction({ ...latestBlockhash });
     const amountOfSol = Number(STAKING_COST_IN_SOL) || 0.01;
     const solInLamports = amountOfSol * LAMPORTS_PER_SOL;
 
@@ -72,8 +70,6 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
       })
     );
 
-    const latestBlockHash = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = publicKey;
     let signedTransaction;
     try {
@@ -84,6 +80,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
     }
 
     try {
+      setIsLoading(true, "Sending transaction to Solana...");
       const signature = await connection.sendRawTransaction(
         signedTransaction.serialize(),
         {
@@ -93,8 +90,8 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
       await connection.confirmTransaction(
         {
           signature,
-          lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-          blockhash: latestBlockHash.blockhash,
+          lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+          blockhash: latestBlockhash.blockhash,
         },
         "confirmed"
       );
@@ -108,6 +105,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
 
     let claimWasSuccessful;
     if (hasUnclaimedRewards) {
+      setIsLoading(true, `Claiming $${payoutAmount} GOODS`);
       claimWasSuccessful = await claimPrimaryRewards({
         nfts,
         primaryRewardAmount: payoutAmount,
@@ -129,18 +127,25 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
       throw new Error("Claiming rewards failed");
     }
 
+    setIsLoading(true, "Unstaking...");
+
+    const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
+    const splitTokenMintAddresses = chunk(tokenMintAddresses, 8);
+    const thawReqs = [];
+    const resetReqs = [];
+    for (const tokenMintAddresses of splitTokenMintAddresses) {
+      const thawReq = axios.post("/api/thaw-token-accounts", {
+        tokenMintAddresses,
+        walletAddress: publicKey.toString(),
+      });
+      const resetReq = axios.post("/api/reset-nfts-claim-time", {
+        mintAddresses: tokenMintAddresses,
+      });
+      thawReqs.push(thawReq);
+      resetReqs.push(resetReq);
+    }
     try {
-      const tokenMintAddresses = nfts.map((nft) => nft.mintAddress);
-      const splitTokenMintAddresses = chunk(tokenMintAddresses, 8);
-      for (const tokenMintAddresses of splitTokenMintAddresses) {
-        const { data } = await axios.post("/api/thaw-token-accounts", {
-          tokenMintAddresses,
-          walletAddress: publicKey.toString(),
-        });
-        await axios.post("/api/reset-nfts-claim-time", {
-          mintAddresses: tokenMintAddresses,
-        });
-      }
+      const responses = await Promise.all([...thawReqs, ...resetReqs]);
 
       showToast({
         primaryMessage: "Unstaked!",

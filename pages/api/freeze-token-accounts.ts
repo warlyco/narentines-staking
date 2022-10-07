@@ -32,7 +32,8 @@ const freezeTokenAccounts: NextApiHandler = async (req, response) => {
 
   const connection = new Connection(RPC_ENDPOINT);
   const keypair = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
-  const transaction = new Transaction();
+  const latestBlockhash = await connection.getLatestBlockhash();
+  const transaction = new Transaction({ ...latestBlockhash });
   const metaplex = Metaplex.make(connection);
 
   let confirmation;
@@ -79,8 +80,6 @@ const freezeTokenAccounts: NextApiHandler = async (req, response) => {
   }
 
   try {
-    const latestBlockHash = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = new PublicKey(STAKING_WALLET_ADDRESS);
 
     confirmation = await sendAndConfirmTransaction(

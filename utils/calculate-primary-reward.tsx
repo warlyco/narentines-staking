@@ -12,12 +12,9 @@ const calculatePrimaryReward = (nft: any) => {
   }
   const timeSinceStakingInMs = now.diff(stakingTime);
   const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
-  console.log(
-    "OUTSTANDING REWARD",
-    timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY
-  );
+
   return Number(
-    (timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY).toFixed(2)
+    (timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY).toFixed(1)
   );
 };
 

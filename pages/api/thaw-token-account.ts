@@ -66,7 +66,8 @@ const thawTokenAccount: NextApiHandler = async (req, response) => {
 
   try {
     let confirmation;
-    const transaction = new Transaction();
+    const latestBlockhash = await connection.getLatestBlockhash();
+    const transaction = new Transaction({ ...latestBlockhash });
     const metaplex = Metaplex.make(connection);
     const nft = await metaplex
       .nfts()
@@ -89,8 +90,6 @@ const thawTokenAccount: NextApiHandler = async (req, response) => {
       })
     );
 
-    const latestBlockHash = await connection.getLatestBlockhash();
-    transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = new PublicKey(STAKING_WALLET_ADDRESS);
 
     confirmation = await sendAndConfirmTransaction(

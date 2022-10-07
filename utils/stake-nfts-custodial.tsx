@@ -68,7 +68,8 @@ const stakeNftsCustodial = async ({
   }
 
   let toTokenAccount;
-  const transaction = new Transaction();
+  const latestBlockhash = await connection.getLatestBlockhash();
+  const transaction = new Transaction({ ...latestBlockhash });
 
   try {
     // get token account if it exists
@@ -122,8 +123,7 @@ const stakeNftsCustodial = async ({
               ASSOCIATED_TOKEN_PROGRAM_ID
             )
           );
-          const latestBlockHash = await connection.getLatestBlockhash();
-          transaction.recentBlockhash = latestBlockHash.blockhash;
+
           transaction.feePayer = publicKey;
           let signed;
           try {
@@ -137,8 +137,8 @@ const stakeNftsCustodial = async ({
             signature = await connection.sendRawTransaction(signed.serialize());
             await connection.confirmTransaction({
               signature,
-              lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-              blockhash: latestBlockHash.blockhash,
+              lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+              blockhash: latestBlockhash.blockhash,
             });
             toTokenAccount = await getOrCreateAssociatedTokenAccount(
               connection,
@@ -184,8 +184,6 @@ const stakeNftsCustodial = async ({
     )
   );
 
-  const latestBlockHash = await connection.getLatestBlockhash();
-  transaction.recentBlockhash = latestBlockHash.blockhash;
   transaction.feePayer = publicKey;
   let signed;
   try {
@@ -201,8 +199,8 @@ const stakeNftsCustodial = async ({
     await connection.confirmTransaction(
       {
         signature,
-        lastValidBlockHeight: latestBlockHash.lastValidBlockHeight,
-        blockhash: latestBlockHash.blockhash,
+        lastValidBlockHeight: latestBlockhash.lastValidBlockHeight,
+        blockhash: latestBlockhash.blockhash,
       },
       "confirmed"
     );

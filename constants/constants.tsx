@@ -103,4 +103,4 @@ export type CollectionNft = {
 export const MINIMUM_PAYOUT_AMOUNT = process.env
   .NEXT_PUBLIC_MINIMUM_PAYOUT_AMOUNT
   ? Number(process.env.NEXT_PUBLIC_MINIMUM_PAYOUT_AMOUNT)
-  : 0.01;
+  : 0.1;
