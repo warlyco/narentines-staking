@@ -114,6 +114,8 @@ const stakeNftsNonCustodial = async ({
       );
     }
     const latestBlockHash = await connection.getLatestBlockhash();
+    paymentTx.recentBlockhash = latestBlockHash.blockhash;
+    paymentTx.feePayer = publicKey;
     transaction.recentBlockhash = latestBlockHash.blockhash;
     transaction.feePayer = publicKey;
     transactions.push(transaction);
