@@ -47,11 +47,12 @@ const StakeUnstakeButtons = ({
   const { connection } = useConnection();
 
   const stakeNft = async () => {
-    if (!publicKey || !signTransaction) {
+    if (!publicKey || !signTransaction || !signAllTransactions) {
       console.log("error", "Wallet not connected!");
       return;
     }
     stakeNftsNonCustodial({
+      signAllTransactions,
       removeFromDispayedNfts,
       publicKey,
       signTransaction,
