@@ -46,7 +46,10 @@ export const MEMO_PROGRAM_ID = new PublicKey(
   "MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"
 );
 
-export const PRIMARY_REWARD_AMOUNT_PER_DAY = 3;
+export const PRIMARY_REWARD_AMOUNT_PER_DAY = process.env
+  .NEXT_PUBLIC_PRIMARY_REWARD_AMOUNT
+  ? Number(process.env.NEXT_PUBLIC_PRIMARY_REWARD_AMOUNT)
+  : 3;
 
 export const MS_PER_DAY = 86400000;
 
