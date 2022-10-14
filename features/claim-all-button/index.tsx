@@ -3,7 +3,6 @@ import axios from "axios";
 import { GOODS_TOKEN_MINT_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
 import { useCallback, useEffect, useState } from "react";
-import calculatePrimaryReward from "utils/calculate-primary-reward";
 import claimPrimaryRewards from "utils/claim-primary-rewards";
 
 type Props = {
@@ -23,8 +22,7 @@ const ClaimAllButton = ({ nfts, walletAddress }: Props) => {
     }
     let totalPayoutAmount = 0;
     for (const nft of nfts) {
-      totalPayoutAmount += calculatePrimaryReward(nft);
-      console.log("payourt:", calculatePrimaryReward(nft));
+      totalPayoutAmount += nft.unclaimedRewardsAmount;
     }
     setPayoutAmount(Number(totalPayoutAmount));
   }, [nfts]);

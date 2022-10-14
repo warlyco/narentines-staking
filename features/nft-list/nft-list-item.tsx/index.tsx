@@ -21,7 +21,6 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
 import toast from "react-hot-toast";
 import claimPrimaryRewards from "utils/claim-primary-rewards";
-import calculatePrimaryReward from "utils/calculate-primary-reward";
 
 type Props = {
   removeFromDispayedNfts: (nft: Nft[]) => void;

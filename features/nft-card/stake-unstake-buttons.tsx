@@ -19,7 +19,6 @@ import { useIsLoading } from "hooks/is-loading";
 import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { WalletTypes } from "types";
-import calculatePrimaryReward from "utils/calculate-primary-reward";
 import claimPrimaryRewards from "utils/claim-primary-rewards";
 import stakeNftsNonCustodial from "utils/stake-nfts-non-custodial";
 
@@ -64,7 +63,8 @@ const StakeUnstakeButtons = ({
   };
 
   const unstakeNft = async () => {
-    setPrimaryRewardAmount(calculatePrimaryReward(nft));
+    // @ts-ignore
+    setPrimaryRewardAmount(nft.unclaimedRewardsAmount);
     setHasUnclaimedRewards(
       Number(primaryRewardAmount.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
     );
@@ -174,7 +174,8 @@ const StakeUnstakeButtons = ({
 
   useEffect(() => {
     if (!nft) return;
-    setPrimaryRewardAmount(calculatePrimaryReward(nft));
+    // @ts-ignore
+    setPrimaryRewardAmount(nft.unclaimedRewardsAmount);
     setHasUnclaimedRewards(
       Number(primaryRewardAmount.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
     );

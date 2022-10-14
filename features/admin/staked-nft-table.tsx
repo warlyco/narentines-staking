@@ -100,28 +100,16 @@ function StakedNftTable() {
     getCoreRowModel: getCoreRowModel(),
   });
 
-  const calculatePrimaryReward = (nft: CollectionNft) => {
-    const { timestamp, lastClaimTimestamp } = nft;
-    const now = dayjs();
-    let stakingTime;
-    if (!lastClaimTimestamp) {
-      stakingTime = dayjs(timestamp);
-    } else {
-      stakingTime = dayjs(lastClaimTimestamp);
-    }
-    const timeSinceStakingInMs = now.diff(stakingTime);
-    const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
-    return (timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY).toFixed(2);
-  };
-
   useEffect(() => {
     if (!fetchedData) return;
     const { nfts } = fetchedData;
 
-    const newData = nfts.map((nft: CollectionNft) => {
+    const newData = nfts.map((nft: CollectionNft | any) => {
       return {
         ...nft,
-        unclaimedAmount: calculatePrimaryReward(nft),
+        unclaimedAmount: nft?.unclaimedRewardsAmount
+          ? nft.unclaimedRewardsAmount
+          : 0,
       };
     });
     setData(newData);

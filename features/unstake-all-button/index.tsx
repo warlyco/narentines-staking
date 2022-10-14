@@ -16,7 +16,6 @@ import { useIsLoading } from "hooks/is-loading";
 import { chunk } from "lodash";
 import { useCallback, useEffect, useState } from "react";
 import toast from "react-hot-toast";
-import calculatePrimaryReward from "utils/calculate-primary-reward";
 import claimPrimaryRewards from "utils/claim-primary-rewards";
 
 type Props = {
@@ -39,7 +38,7 @@ const UnstakeAllButton = ({ nfts, removeFromDispayedNfts }: Props) => {
     }
     let totalPayoutAmount = 0;
     for (const nft of nfts) {
-      totalPayoutAmount += calculatePrimaryReward(nft);
+      totalPayoutAmount += nft.unclaimedRewardsAmount || 0;
     }
     setPayoutAmount(Number(totalPayoutAmount));
     setHasUnclaimedRewards(
