@@ -9,6 +9,8 @@ export const FETCH_FROZEN_NFTS = gql`
       name
       mintAddress
       image
+      unclaimedRewardsAmount
+      rewardsLastCalculatedTimestamp
       profession {
         name
         dailyRewardRate

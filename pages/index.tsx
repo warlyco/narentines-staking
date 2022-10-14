@@ -158,14 +158,6 @@ const Home: NextPage = () => {
 
   const fetchNfts = useCallback(async () => {
     fetchNftsFromMetaplex();
-    // if (activeWallet === WalletTypes.STAKING) {
-    //   await fetchStakedNfts();
-
-    //   return;
-    // } else {
-    //   console.log("fetchNftsFromMetaplex");
-
-    // }
   }, [fetchNftsFromMetaplex]);
 
   useEffect(() => {

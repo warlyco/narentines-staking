@@ -110,8 +110,8 @@ const NftListItem = ({
 
   useEffect(() => {
     if (!nft) return;
-    const reward = calculatePrimaryReward(nft);
-    setPrimaryRewardAmount(reward);
+
+    setPrimaryRewardAmount(nft.unclaimedRewardsAmount);
     // calculateSecondaryReward();
     // updateSecondaryRewardLabel();
   }, [

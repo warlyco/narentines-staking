@@ -4254,6 +4254,11 @@ joi@^17.4.0:
     "@sideway/formula" "^3.0.0"
     "@sideway/pinpoint" "^2.0.0"
 
+js-big-decimal@^1.3.10:
+  version "1.3.10"
+  resolved "https://registry.yarnpkg.com/js-big-decimal/-/js-big-decimal-1.3.10.tgz#ef57088166a800794292f105e7a7cbeaa68b4eae"
+  integrity sha512-72ZMrjPXayckOZeDbceaiL1MiEjx+S+w6GTLiQkfI1nenmD14eUFHG9BH4wLrb5HlWlrUgGmRgxSjuU0KxIyww==
+
 js-sha256@^0.9.0:
   version "0.9.0"
   resolved "https://registry.yarnpkg.com/js-sha256/-/js-sha256-0.9.0.tgz#0b89ac166583e91ef9123644bd3c5334ce9d0966"

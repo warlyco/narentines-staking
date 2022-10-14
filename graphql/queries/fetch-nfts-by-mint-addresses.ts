@@ -10,6 +10,8 @@ export const FETCH_NFTS_BY_MINT_ADDRESSES = gql`
       mintAddress
       image
       isFrozen
+      rewardsLastCalculatedTimestamp
+      unclaimedRewardsAmount
       profession {
         name
         dailyRewardRate
