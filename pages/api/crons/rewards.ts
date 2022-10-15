@@ -6,19 +6,9 @@ import { FETCH_FROZEN_NFTS } from "graphql/queries/fetch-frozen-nfts";
 import { NextApiRequest, NextApiResponse } from "next";
 import { add, multiply } from "utils/maths";
 
-const calculateStakedRewards = async (res: NextApiResponse) => {
+const calculateStakedRewards = async (nfts: any[], res: NextApiResponse) => {
   try {
-    const { nfts } = await request({
-      url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: FETCH_FROZEN_NFTS,
-      requestHeaders: {
-        "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
-      },
-    });
-
     const updateReqs = nfts.map((nft: any) => {
-      console.log(nft);
-      // DO MATHS
       const {
         rewardsLastCalculatedTimestamp,
         unclaimedRewardsAmount,
@@ -35,12 +25,10 @@ const calculateStakedRewards = async (res: NextApiResponse) => {
           newUnclaimedRewardsAmount
         );
       } else {
-        // console.log("rewardsLastCalculatedTimestamp");
         const date1 = dayjs();
         const date2 = dayjs(rewardsLastCalculatedTimestamp);
         const diff = date1.diff(date2, "hour", true);
         const additionalRewards = multiply(hourlyRewardRate, diff);
-        // console.log({ hourlyRewardRate, diff, additionalRewards });
         newUnclaimedRewardsAmount = add(
           unclaimedRewardsAmount,
           additionalRewards
@@ -68,6 +56,16 @@ const calculateStakedRewards = async (res: NextApiResponse) => {
   }
 };
 
+const fetchNfts = () => {
+  return request({
+    url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
+    document: FETCH_FROZEN_NFTS,
+    requestHeaders: {
+      "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
+    },
+  });
+};
+
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse
@@ -77,7 +75,8 @@ export default async function handler(
       const { authorization } = req.headers;
 
       if (authorization === `Bearer ${process.env.API_SECRET_KEY}`) {
-        calculateStakedRewards(res);
+        const { nfts } = await fetchNfts();
+        calculateStakedRewards(nfts, res);
       } else {
         res.status(401).json({ success: false });
       }
