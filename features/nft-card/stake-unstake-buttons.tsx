@@ -176,11 +176,10 @@ const StakeUnstakeButtons = ({
     if (!nft) return;
     // @ts-ignore
     setPrimaryRewardAmount(nft.unclaimedRewardsAmount);
-    setHasUnclaimedRewards(
-      Number(primaryRewardAmount.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
-    );
-    console.log(Number(primaryRewardAmount.toFixed(2)));
-    // debugger;
+    const hasUnclaimedRewards = primaryRewardAmount
+      ? Number(primaryRewardAmount?.toFixed(2)) > MINIMUM_PAYOUT_AMOUNT
+      : false;
+    setHasUnclaimedRewards(hasUnclaimedRewards);
   }, [primaryRewardAmount, nft]);
 
   return (
