@@ -8,9 +8,10 @@ import claimPrimaryRewards from "utils/claim-primary-rewards";
 type Props = {
   nfts: any[];
   walletAddress: string;
+  refetch: any;
 };
 
-const ClaimAllButton = ({ nfts, walletAddress }: Props) => {
+const ClaimAllButton = ({ nfts, walletAddress, refetch }: Props) => {
   const { isLoading, setIsLoading } = useIsLoading();
   const [payoutAmount, setPayoutAmount] = useState(0);
   const { publicKey } = useWallet();
@@ -37,6 +38,7 @@ const ClaimAllButton = ({ nfts, walletAddress }: Props) => {
       setIsLoading,
       publicKey,
       setPrimaryRewardAmount: setPayoutAmount,
+      refetch,
     });
   };
 

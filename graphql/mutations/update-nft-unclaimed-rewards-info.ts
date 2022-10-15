@@ -1,7 +1,7 @@
 import { gql } from "graphql-request";
 
-export const UPDATE_UNCLAIMED_REWARDS_AMOUNT = gql`
-  mutation UPDATE_UNCLAIMED_REWARDS_AMOUNT(
+export const UPDATE_NFT_UNCLAIMED_REWARDS_INFO = gql`
+  mutation UPDATE_NFT_UNCLAIMED_REWARDS_INFO(
     $unclaimedRewardsAmount: float8
     $mintAddress: String!
     $rewardsLastCalculatedTimestamp: timestamptz

@@ -254,6 +254,7 @@ const Home: NextPage = () => {
                       removeFromDispayedNfts={() => setShouldDisplayNfts(false)}
                     />
                     <ClaimAllButton
+                      refetch={refetch}
                       walletAddress={publicKey?.toString()}
                       nfts={
                         shouldDisplayNfts

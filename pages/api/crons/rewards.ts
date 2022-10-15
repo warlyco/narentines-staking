@@ -1,7 +1,7 @@
 import { PRIMARY_REWARD_AMOUNT_PER_DAY } from "constants/constants";
 import dayjs from "dayjs";
 import request from "graphql-request";
-import { UPDATE_UNCLAIMED_REWARDS_AMOUNT } from "graphql/mutations/update-unclaimed-rewards-amount";
+import { UPDATE_NFT_UNCLAIMED_REWARDS_INFO } from "graphql/mutations/update-nft-unclaimed-rewards-info";
 import { FETCH_FROZEN_NFTS } from "graphql/queries/fetch-frozen-nfts";
 import { NextApiRequest, NextApiResponse } from "next";
 import { add, multiply } from "utils/maths";
@@ -49,7 +49,7 @@ const calculateStakedRewards = async (res: NextApiResponse) => {
 
       return request({
         url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-        document: UPDATE_UNCLAIMED_REWARDS_AMOUNT,
+        document: UPDATE_NFT_UNCLAIMED_REWARDS_INFO,
         variables: {
           mintAddress: mintAddress,
           unclaimedRewardsAmount: newUnclaimedRewardsAmount,

@@ -10,6 +10,7 @@ type Args = {
   publicKey: PublicKey;
   setPrimaryRewardAmount: (amount: number) => void;
   isOnlyAction?: boolean;
+  refetch?: () => void;
 };
 
 const claimPrimaryRewards: ({
@@ -19,7 +20,9 @@ const claimPrimaryRewards: ({
   publicKey,
   setPrimaryRewardAmount,
   isOnlyAction,
+  refetch,
 }: Args) => Promise<boolean | undefined> = async ({
+  refetch,
   primaryRewardAmount,
   setIsLoading,
   nfts,
@@ -81,7 +84,11 @@ const claimPrimaryRewards: ({
         </a>
       </div>
     );
-    setPrimaryRewardAmount(0);
+    if (refetch) {
+      refetch();
+    } else {
+      setPrimaryRewardAmount(0);
+    }
     return resolve(true);
   });
 };

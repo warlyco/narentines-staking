@@ -23,6 +23,7 @@ import {
 import dayjs from "dayjs";
 import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
 import { UPDATE_NFTS_CLAIM_TIME } from "graphql/mutations/update-nfts-claim-time";
+import { UPDATE_NFTS_UNCLAIMED_REWARDS_INFO } from "graphql/mutations/update-nfts-unclaimed-rewards-info";
 
 const initRewardClaim: NextApiHandler = async (req, response) => {
   const { mintAddresses, rewardTokenAddress, walletAddress } = req.body;
@@ -78,10 +79,11 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
   try {
     const { update_nfts } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: UPDATE_NFTS_CLAIM_TIME,
+      document: UPDATE_NFTS_UNCLAIMED_REWARDS_INFO,
       variables: {
         mintAddresses,
-        lastClaimTimestamp: new Date().toISOString(),
+        rewardsLastCalculatedTimestamp: new Date().toISOString(),
+        unclaimedRewardsAmount: 0,
       },
       requestHeaders: {
         "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
