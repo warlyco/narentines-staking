@@ -1,6 +1,4 @@
 import { useWallet } from "@solana/wallet-adapter-react";
-import axios from "axios";
-import { GOODS_TOKEN_MINT_ADDRESS } from "constants/constants";
 import { useIsLoading } from "hooks/is-loading";
 import { useCallback, useEffect, useState } from "react";
 import claimPrimaryRewards from "utils/claim-primary-rewards";
