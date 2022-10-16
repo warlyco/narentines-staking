@@ -24,6 +24,7 @@ import dayjs from "dayjs";
 import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
 import { UPDATE_NFTS_CLAIM_TIME } from "graphql/mutations/update-nfts-claim-time";
 import { UPDATE_NFTS_UNCLAIMED_REWARDS_INFO } from "graphql/mutations/update-nfts-unclaimed-rewards-info";
+import { add, multiply } from "utils/maths";
 
 const initRewardClaim: NextApiHandler = async (req, response) => {
   const { mintAddresses, rewardTokenAddress, walletAddress } = req.body;
@@ -68,11 +69,11 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
     const timeSinceStakingInMs = now.diff(stakingTime);
     const timeSinceStakingInDays = timeSinceStakingInMs / MS_PER_DAY;
 
-    const rewardAmount = Number(
-      (timeSinceStakingInDays * PRIMARY_REWARD_AMOUNT_PER_DAY).toFixed(2)
+    const rewardAmount = multiply(
+      timeSinceStakingInDays,
+      PRIMARY_REWARD_AMOUNT_PER_DAY
     );
-    totalPayoutAmount = Number((totalPayoutAmount + rewardAmount).toFixed(2));
-    console.log({ rewardAmount });
+    totalPayoutAmount = add(totalPayoutAmount, rewardAmount);
   });
   console.log({ totalPayoutAmount });
 
@@ -143,7 +144,7 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
       toTokenAccount.address,
       new PublicKey(STAKING_WALLET_ADDRESS),
       // totalPayoutAmount * 100,
-      Number((totalPayoutAmount * 100).toFixed(2)),
+      Number(multiply(totalPayoutAmount, 100).toFixed(6)),
       [],
       TOKEN_PROGRAM_ID
     )
