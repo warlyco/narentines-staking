@@ -146,9 +146,10 @@ const NftListItem = ({
               </div>
               <div>
                 <span className="font-bold mr-2">$GOODS:</span>
-                {Number(primaryRewardAmount.toFixed(2)) === 0
-                  ? 0
-                  : Number(primaryRewardAmount.toFixed(2))}{" "}
+                {!!primaryRewardAmount &&
+                Number(primaryRewardAmount?.toFixed(2)) > 0
+                  ? Number(primaryRewardAmount?.toFixed(2))
+                  : 0}{" "}
                 ({PRIMARY_REWARD_AMOUNT_PER_DAY}/day)
                 {/* {nft.profession.id === ProfessionIds.BANKER
                   ? PRIMARY_REWARD_AMOUNT_PER_DAY +
