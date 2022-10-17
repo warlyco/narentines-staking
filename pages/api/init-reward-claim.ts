@@ -144,7 +144,7 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
       toTokenAccount.address,
       new PublicKey(STAKING_WALLET_ADDRESS),
       // totalPayoutAmount * 100,
-      Number(multiply(totalPayoutAmount, 100).toFixed(6)),
+      Number(multiply(totalPayoutAmount, 100).toFixed(2)),
       [],
       TOKEN_PROGRAM_ID
     )
