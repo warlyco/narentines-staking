@@ -136,23 +136,29 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
     return;
   }
 
-  const adjustedTotalPayoutAmount = (totalPayoutAmount + Number.EPSILON) * 100;
-
-  const amount =
-    Math.round((adjustedTotalPayoutAmount + Number.EPSILON) * 100) / 100;
-
   const latestBlockhash = await connection.getLatestBlockhash();
   const transaction = new Transaction({ ...latestBlockhash });
-  transaction.add(
-    createTransferInstruction(
-      fromTokenAccount.address,
-      toTokenAccount.address,
-      new PublicKey(STAKING_WALLET_ADDRESS),
-      amount,
-      [],
-      TOKEN_PROGRAM_ID
-    )
-  );
+  try {
+    const adjustedTotalPayoutAmount =
+      (totalPayoutAmount + Number.EPSILON) * 100;
+
+    // const amount =
+    //   Math.round((adjustedTotalPayoutAmount + Number.EPSILON) * 100) / 100;
+
+    transaction.add(
+      createTransferInstruction(
+        fromTokenAccount.address,
+        toTokenAccount.address,
+        new PublicKey(STAKING_WALLET_ADDRESS),
+        Number((totalPayoutAmount * 100).toFixed(2)),
+        [],
+        TOKEN_PROGRAM_ID
+      )
+    );
+  } catch (error) {
+    response.status(500).json({ error });
+    return;
+  }
 
   let confirmation;
   try {
