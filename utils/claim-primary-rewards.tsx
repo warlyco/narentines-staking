@@ -35,18 +35,26 @@ const claimPrimaryRewards: ({
     setIsLoading(true, `Claiming ${primaryRewardAmount.toFixed(2)} $GOODS`);
     const mintAddresses = nfts.map((nft) => nft.mintAddress);
 
-    const { data, status } = await axios.post("/api/init-reward-claim", {
-      mintAddresses,
-      rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
-      walletAddress: publicKey?.toString(),
-    });
-    if (isOnlyAction) {
+    let claimData, claimStatus;
+    try {
+      const { data, status } = await axios.post("/api/init-reward-claim", {
+        mintAddresses,
+        rewardTokenAddress: GOODS_TOKEN_MINT_ADDRESS,
+        walletAddress: publicKey?.toString(),
+      });
+      if (isOnlyAction) {
+        setIsLoading(false);
+      }
+      claimData = data;
+      claimStatus = status;
+    } catch (error) {
       setIsLoading(false);
+      toast.error("Error claiming rewards, please try again.");
     }
 
-    const { confirmation } = data;
+    const { confirmation } = claimData;
 
-    if (status !== 200) {
+    if (claimStatus !== 200) {
       toast.custom(
         <div className="flex flex-col bg-amber-200 rounded-xl text-xl deep-shadow p-4 px-6 border-slate-400 text-center duration-200">
           <div className="font-bold text-3xl mb-2">
@@ -65,6 +73,7 @@ const claimPrimaryRewards: ({
           )}
         </div>
       );
+      setIsLoading(false);
       return reject(false);
     }
 

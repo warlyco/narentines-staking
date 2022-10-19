@@ -22,7 +22,6 @@ import {
 } from "@solana/spl-token";
 import dayjs from "dayjs";
 import { FETCH_NFTS_BY_MINT_ADDRESSES } from "graphql/queries/fetch-nfts-by-mint-addresses";
-import { UPDATE_NFTS_CLAIM_TIME } from "graphql/mutations/update-nfts-claim-time";
 import { UPDATE_NFTS_UNCLAIMED_REWARDS_INFO } from "graphql/mutations/update-nfts-unclaimed-rewards-info";
 import { add, multiply } from "utils/maths";
 
@@ -38,6 +37,7 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
     throw new Error("Missing required fields");
 
   let nftsInDb;
+  console.log({ mintAddresses });
   try {
     const { nfts } = await request({
       url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
@@ -76,26 +76,6 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
     totalPayoutAmount = add(totalPayoutAmount, rewardAmount);
   });
   console.log({ totalPayoutAmount });
-
-  try {
-    const { update_nfts } = await request({
-      url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
-      document: UPDATE_NFTS_UNCLAIMED_REWARDS_INFO,
-      variables: {
-        mintAddresses,
-        rewardsLastCalculatedTimestamp: new Date().toISOString(),
-        unclaimedRewardsAmount: 0,
-      },
-      requestHeaders: {
-        "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
-      },
-    });
-    console.log("claim updated", update_nfts);
-  } catch (error) {
-    console.error(error);
-    response.status(500).json({ error });
-    return;
-  }
 
   const connection = new Connection(RPC_ENDPOINT);
   const keypair = Keypair.fromSecretKey(bs58.decode(process.env.PRIVATE_KEY));
@@ -139,23 +119,25 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
   const latestBlockhash = await connection.getLatestBlockhash();
   const transaction = new Transaction({ ...latestBlockhash });
   try {
-    const adjustedTotalPayoutAmount =
-      (totalPayoutAmount + Number.EPSILON) * 100;
+    const amount = multiply(
+      Math.round(multiply(totalPayoutAmount, 100)) / 100,
+      100
+    );
 
-    // const amount =
-    //   Math.round((adjustedTotalPayoutAmount + Number.EPSILON) * 100) / 100;
+    console.log({ amount });
 
     transaction.add(
       createTransferInstruction(
         fromTokenAccount.address,
         toTokenAccount.address,
         new PublicKey(STAKING_WALLET_ADDRESS),
-        Number((totalPayoutAmount * 100).toFixed(2)),
+        amount,
         [],
         TOKEN_PROGRAM_ID
       )
     );
   } catch (error) {
+    console.error("tx creation error");
     response.status(500).json({ error });
     return;
   }
@@ -185,6 +167,28 @@ const initRewardClaim: NextApiHandler = async (req, response) => {
     response.status(500).json({ error });
     return;
   }
+
+  try {
+    const { update_nfts } = await request({
+      url: process.env.NEXT_PUBLIC_ADMIN_GRAPHQL_API_ENDPOINT!,
+      document: UPDATE_NFTS_UNCLAIMED_REWARDS_INFO,
+      variables: {
+        mintAddresses,
+        rewardsLastCalculatedTimestamp: new Date().toISOString(),
+        lastClaimTimestamp: new Date().toISOString(),
+        unclaimedRewardsAmount: 0,
+      },
+      requestHeaders: {
+        "x-hasura-admin-secret": process.env.HASURA_GRAPHQL_ADMIN_SECRET!,
+      },
+    });
+    console.log("claim updated", update_nfts);
+  } catch (error) {
+    console.error(error);
+    response.status(500).json({ error });
+    return;
+  }
+
   response.json({ confirmation });
 };
 
