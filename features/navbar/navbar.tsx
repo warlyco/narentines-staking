@@ -42,6 +42,14 @@ export const Navbar = ({ toggleSidebar }: Props) => {
           </a>
           <a
             className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-medium shadow-xl"
+            href="https://narentines.floppylabs.io/"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Old Staking
+          </a>
+          <a
+            className="bg-amber-200 hover:bg-black hover:text-amber-200 text-lg px-3 py-1 uppercase rounded-lg font-medium shadow-xl"
             href="//bazaar.narentines.com/raffle"
             rel="noopener noreferrer"
           >

@@ -44,10 +44,10 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
                 className="cursor-pointer"
               />
             </button>
-            <div className="flex flex-col space-y-8 flex-grow">
-              <div>
+            <div className="flex-grow flex flex-col">
+              <div className="py-6">
                 <a
-                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium"
+                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium w-auto"
                   href="//narentines.com"
                   target="_blank"
                   onClick={handleCloseSidebar}
@@ -56,9 +56,9 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
                   Home
                 </a>
               </div>
-              <div>
+              <div className="py-6">
                 <a
-                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium"
+                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium w-auto"
                   href="//explore.narentines.com"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -67,17 +67,26 @@ export const Sidebar = ({ isOpenSidebar, toggleSidebar }: Props) => {
                   Explore the Valley
                 </a>
               </div>
-              <div>
-                <div className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 uppercase rounded-lg font-medium py-[4px] inline-block -mt-1">
-                  <a
-                    rel="noopener noreferrer"
-                    href="//bazaar.narentines.com/raffle"
-                    onClick={handleCloseSidebar}
-                    className="inline-block"
-                  >
-                    Raffle
-                  </a>
-                </div>
+              <div className="py-6">
+                <a
+                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium w-auto"
+                  href="https://narentines.floppylabs.io/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={handleCloseSidebar}
+                >
+                  Old Staking
+                </a>
+              </div>
+              <div className="py-6">
+                <a
+                  className="bg-amber-200 hover:bg-amber-400 text-2xl px-3 py-2 uppercase rounded-lg font-medium w-auto"
+                  rel="noopener noreferrer"
+                  href="//bazaar.narentines.com/raffle"
+                  onClick={handleCloseSidebar}
+                >
+                  Raffle
+                </a>
               </div>
               {/* <div>
                 <a
