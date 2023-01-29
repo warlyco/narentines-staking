@@ -15,7 +15,7 @@ import {
   ProfessionNames,
 } from "constants/constants";
 import { useQuery } from "@apollo/client";
-import { FETCH_PROFESSIONS } from "graphql/queries/fetch-professions";
+// import { FETCH_PROFESSIONS } from "graphql/queries/fetch-professions";
 import { useIsLoading } from "hooks/is-loading";
 import { useWallet } from "@solana/wallet-adapter-react";
 import axios from "axios";
@@ -48,7 +48,7 @@ const NftListItem = ({
   const [selectedProfessionId, setSelectedProfessionId] = useState(
     ProfessionIds.BANKER
   );
-  const { loading, error, data: professionsData } = useQuery(FETCH_PROFESSIONS);
+  // const { loading, error, data: professionsData } = useQuery(FETCH_PROFESSIONS);
   const { setIsLoading } = useIsLoading();
   const { publicKey } = useWallet();
 
@@ -85,27 +85,27 @@ const NftListItem = ({
     setSelectedProfessionId(e.target.value);
   };
 
-  const calculateSecondaryReward = useCallback(() => {
-    const { professions } = professionsData;
-    if (nft.profession.id === ProfessionIds.BANKER) {
-      setSecondaryRewardAmount(0);
-      return;
-    }
-    const profession = professions.find(
-      (profession: Profession) => profession.id === nft.profession.id
-    );
-    const { timeSinceStakingInDays } = getStakingTime();
-    const rewardAmount = timeSinceStakingInDays * profession?.dailyRewardRate;
-    setSecondaryRewardAmount(Math.floor(rewardAmount));
-  }, [professionsData, nft, getStakingTime]);
+  // const calculateSecondaryReward = useCallback(() => {
+  //   const { professions } = professionsData;
+  //   if (nft.profession.id === ProfessionIds.BANKER) {
+  //     setSecondaryRewardAmount(0);
+  //     return;
+  //   }
+  //   const profession = professions.find(
+  //     (profession: Profession) => profession.id === nft.profession.id
+  //   );
+  //   const { timeSinceStakingInDays } = getStakingTime();
+  //   const rewardAmount = timeSinceStakingInDays * profession?.dailyRewardRate;
+  //   setSecondaryRewardAmount(Math.floor(rewardAmount));
+  // }, [professionsData, nft, getStakingTime]);
 
-  const updateSecondaryRewardLabel = useCallback(() => {
-    const { professions } = professionsData;
-    const profession = professions.find(
-      (profession: Profession) => profession.id === nft.profession.id
-    );
-    setSecondaryRewardLabel(profession?.resource?.name);
-  }, [professionsData, nft]);
+  // const updateSecondaryRewardLabel = useCallback(() => {
+  //   const { professions } = professionsData;
+  //   const profession = professions.find(
+  //     (profession: Profession) => profession.id === nft.profession.id
+  //   );
+  //   setSecondaryRewardLabel(profession?.resource?.name);
+  // }, [nft]);
 
   useEffect(() => {
     if (!nft) return;
@@ -113,12 +113,7 @@ const NftListItem = ({
     setPrimaryRewardAmount(nft.unclaimedRewardsAmount);
     // calculateSecondaryReward();
     // updateSecondaryRewardLabel();
-  }, [
-    professionsData,
-    nft,
-    calculateSecondaryReward,
-    updateSecondaryRewardLabel,
-  ]);
+  }, [nft]);
 
   return (
     <div>
